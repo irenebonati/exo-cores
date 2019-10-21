@@ -1,0 +1,27 @@
+
+alpha_c       :  1.3e-5           # Thermal expansion coefficient at center (K-1)
+r_OC          :  3480.e3          # Core radius (m)
+r_IC          :  1221.e3          # Present inner core radius (m) --> same as c
+CP            :  750.             # Specific heat (Jkg-1K-1)
+Deltarho_ICB  :  500.             # Density jump at ICB (kgm-3)
+DeltaS        :  127.             # Entropy of crystallization (Jkg-1K-1)
+DTS_DTAD      :  1.65             # Adiabatic temperature gradient (K/m)
+gamma         :  1.5              # Grueneisen parameter
+GC             :  6.67384e-11     # Gravitational constant (m3kg-1s-2)
+H             :  0.               # Radioactivity
+K_c           :  1403.e9          # Bulk modulus at center (Pa) (Labrosse+2015)
+Kprime_0      :  3.567            # unitless
+k_c           :  163.             # Thermal conductivity at center (Wm-1K-1)
+#L_T           :  6042.e3          # Temperature length scale (m)
+Q_CMB         :  7.4e12           # Present CMB flux (W)
+rho_c         :  12502.           # Density at center (kgm-3)
+rho_oc        :  10.e3            # Density outer core (kgm-3)
+rho_0         :  7.5e3            # Density at 0 pressure (kgm-3)
+T_s0          :  5270.            # Solidification temperature at center (K,Labrosse 2001)
+Ts_ICB        :  5600.            # Present temperature at ICB (K)
+beta          :  0.83
+dTL_dchi      :  -21.e3           # Compositional dependence of liquidus temperature (K)
+dTL_dP        :  9.E-9            # Pressure dependence of liquidus temperature (Pa-1)
+chi0          :  0.056            # Difference in mass fraction of light elements across ICB
+TL0           :  5700.            # Melting temperature at center (K)
+
