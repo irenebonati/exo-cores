@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import pandas as pd
+import glob
 
 from scipy.optimize import curve_fit, minimize_scalar # for fitting the density with a function
 
@@ -151,7 +152,7 @@ def figure(data, ax, symb="-"):
     ax[1,0].set_xlabel("Radius (km)")
     ax[1,1].set_xlabel("Radius (km)")
 
-def write_parameter_file(filename, fig=False):
+def write_parameter_file(filename, fig=False, folder=""):
     """ Write the yaml file including all the parameters """
     # extract the profile
     core = read_data_profiles(filename, core=True)
@@ -173,7 +174,7 @@ def write_parameter_file(filename, fig=False):
     #param["r_IC_0"] = find_rIC(core).tolist() # this function for r_IC is not as good (only on the grid)
     param["TL0"] = T_liquidus_core(P0, 0).tolist()
     param["K_c"] = 1403.e9 # Earth's bulk modulus at the center (Labrosse+2015)
-    output_filename = "M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
+    output_filename = folder+"M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
     # create the yaml parameter file
     with open(output_filename, 'w') as outfile:
         yaml.dump(param, outfile, default_flow_style=False)
@@ -190,14 +191,38 @@ def write_parameter_file(filename, fig=False):
         ax3[0,0].plot(radius/1e3, T_liquidus_core(pressure_diff(radius, param["rho_0"], param["L_rho"], param["A_rho"])+P0), label="Melting T")
         ax3[0,0].plot(np.array([param["r_IC_0"], param["r_IC_0"]])/1e3, [core["T(K)"].iloc[-1], core["T(K)"].iloc[0]])
         ax3[0,0].legend()
+    return Mp, XFe, FeM, param["rho_0"], param["L_rho"], param["A_rho"]
         
-    def explore_all_create_yaml(folder):
-        pass    
-        
+def explore_all_create_yaml(folder, fig=False):
+    files = [f for f in glob.glob(folder + "*.res")]
+    all_files = "all_files_list.txt"
+    for file in files: 
+        if file[-12:] != "/data_IS.res": # we need to remove the file data_IS.res which includes every runs
+            Mp, XFe, FeM, rho, L, A = write_parameter_file(file, folder=folder)
+            with open(all_files, 'a+') as the_file:
+                the_file.write('{} {} {} {} {} {}\n'.format(Mp, XFe, FeM, rho, L, A))
+    if fig:
+        all_files = "all_files_list.txt"
+        names = ["Mp", "XFe", "FeM", "rho", "L", "A"]
+        data = pd.read_csv(all_files, skipinitialspace=True, sep=" ", names=names)
+        data = data[data["FeM"]==0.]
+        fig, ax = plt.subplots(1, 2, sharex=True, sharey=True)
+        sc = ax[0].tricontourf(data["Mp"], data["XFe"], data["L"]/1e3)
+        plt.colorbar(sc, ax=ax[0])
+        sc = ax[1].tricontourf(data["Mp"], data["XFe"], data["rho"])
+        plt.colorbar(sc, ax=ax[1])
+        ax[0].set_ylabel("XFe")
+        ax[0].set_xlabel("Mass planet")
+        ax[0].set_title("L density")
+        ax[1].set_xlabel("Mass planet")
+        ax[1].set_title("density at center")
+
+    
 if __name__ == "__main__":
     filename = name_file(50, 1.2, 0)
     write_parameter_file(filename, fig=True)
     filename = name_file(30, 1.2, 0)
     write_parameter_file(filename, fig=True)  
     read_qs(1.2, 55, 0, fig=True)
+    explore_all_create_yaml("With_DTcmb/", fig=True)
     plt.show()
