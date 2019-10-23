@@ -151,14 +151,17 @@ def figure(data, ax, symb="-"):
     ax[1,0].set_xlabel("Radius (km)")
     ax[1,1].set_xlabel("Radius (km)")
 
-def write_parameter_file(XFe, Mp, FeM, fig=False):
+def write_parameter_file(filename, fig=False):
     """ Write the yaml file including all the parameters """
     # extract the profile
-    filename = name_file(XFe, Mp, FeM)
     core = read_data_profiles(filename, core=True)
+    # extract the mass, XFe, FeM
+    newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in filename[:-4])
+    Mp, XFe, FeM = [float(i) for i in newstr.split()]
     # initialize parameters with Earth
     param = Earth()
     #update parameters
+    param["Mp"], param["XFe"], param["FeM"] = Mp, XFe, FeM
     param["rho_0"], param["L_rho"], param["A_rho"] = find_Lrho_Arho(core)
     param["CP"] = average_volume(core, "Cp(J/kgK)").tolist()
     param["alpha_c"] = average_volume(core, "alpha(10^-5 1/s)").tolist() * 1e-5
@@ -176,7 +179,7 @@ def write_parameter_file(XFe, Mp, FeM, fig=False):
         yaml.dump(param, outfile, default_flow_style=False)
     # if necessary, plot the figure to check the fits and values
     if fig: 
-        rho = core["rho(kg/m^3)"]
+        #rho = core["rho(kg/m^3)"]
         radius = core["r(m)"]
         fig, ax3 = plt.subplots(2,2)
         figure(core, ax3)
@@ -188,10 +191,13 @@ def write_parameter_file(XFe, Mp, FeM, fig=False):
         ax3[0,0].plot(np.array([param["r_IC_0"], param["r_IC_0"]])/1e3, [core["T(K)"].iloc[-1], core["T(K)"].iloc[0]])
         ax3[0,0].legend()
         
-        
+    def explore_all_create_yaml(folder):
+        pass    
         
 if __name__ == "__main__":
-    write_parameter_file(50, 1.2, 0, fig=True)
-    write_parameter_file(30, 1.2, 0, fig=True)  
+    filename = name_file(50, 1.2, 0)
+    write_parameter_file(filename, fig=True)
+    filename = name_file(30, 1.2, 0)
+    write_parameter_file(filename, fig=True)  
     read_qs(1.2, 55, 0, fig=True)
     plt.show()
