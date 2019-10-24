@@ -13,7 +13,7 @@ Mp = 1.2
 XFe = 50
 FeM = 0.00
 
-qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe)+5, int(FeM)), sep=" ", skiprows=1, header=None)
+qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe)+5, int(FeM)), sep=" ", header=None)
 qcmb_ev.columns = ["time", "qcmb", "Tcmb"]   
 
 # Define class for test case
@@ -38,23 +38,40 @@ class Rocky_Planet():
         for k, v in dict_param.items():
             setattr(self, k, float(v))
 
-# Run evolution model          
-    def evolution(self):
-        evolution = Evolution(self)
-        #for i in enumerate(time_vector):
-#            if i==0:
-#                self.r_IC = self.planet.r_IC_0
-            #if self.planet.r_IC_0 == 0.0 or self.T0 < self.planet.TL0:
-        evolution.noic()
-            #else:
-        evolution.ic()
-        evolution.profiles()
 
 class Evolution():
     """ Calculate the thermal evolution a given planet """
 
     def __init__(self, planet):
         self.planet = planet
+        self.r_IC = np.zeros_like(self.planet.time_vector)
+        self.drIC_dt = np.zeros_like(self.planet.time_vector)
+        self.T = np.zeros_like(self.planet.time_vector)
+        self.dT_dt = np.zeros_like(self.planet.time_vector)
+        self.Delta_time = self.planet.time_vector.diff()*year
+        
+        self.T[0] = self.planet.T0
+        self.r_IC[0] = self.planet.r_IC_0
+        
+             
+        
+    # Run evolution model          
+    def run(self):
+        for i,time in enumerate(self.planet.time_vector[1:]):
+            
+#            if i==0:
+#                self.r_IC = self.planet.r_IC_0
+            #if self.planet.r_IC_0 == 0.0 or self.T0 < self.planet.TL0:
+            T, dT_dt, PC, drIC_dt,r_IC =  self.update_noic(self.T[i],self.Delta_time[i+1])
+            self.T[i+1] = T # same with all other parameters that are output
+            #print i, T, dT_dt, PC, drIC_dt,r_IC
+            
+        plt.plot(self.planet.time_vector,self.T,'+')
+        print self.Delta_time, self.T[0], self.T[-1]
+        
+            #else:
+        #evolution.update_ic()
+        #evolution.profiles()
         
     def dTL_dr_IC(self, r):
         ''' Melting temperature jump at ICB (to be modified) '''
@@ -102,48 +119,51 @@ class Evolution():
         * (self.fX(self.planet.r_OC / self.planet.L_rho, r) - self.fX(r / self.planet.L_rho, r))
 
     
-    def noic(self):
+    def update_noic(self,T,Delta_time):
         
-        self.fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
+        
+        fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
         
         ''' Secular cooling power '''
-        self.PC = (-4*np.pi/3*self.planet.rho_c*self.planet.CP*self.planet.L_rho**3*self.fC)
+        PC = (-4*np.pi/3*self.planet.rho_c*self.planet.CP*self.planet.L_rho**3*fC)
         
         '''Temperature increase at center'''
-        self.dT0_dt = self.planet.Q_CMB/self.PC  # leave QCMB constant for now
+        dT_dt = self.planet.Q_CMB/PC  # leave QCMB constant for now
         
         ''' New central temperature '''
-        self.T0 = self.planet.T0 + self.dT0_dt
+        T = T + dT_dt * Delta_time   # need to have time interval to be multiplied with (s)
         
         ''' Inner core growth '''
-        self.dRic_dt = 0
+        drIC_dt = 0.
         
-        self.r_IC = 0
+        r_IC = 0.
         
         ''' Latent heat power '''
-        self.PL = 0
+        PL = 0.
 
         ''' Gravitational heat power '''
-        self.PX = 0
+        PX = 0.
         
-    def ic(self):
+        return T, dT_dt, PC, drIC_dt,r_IC
         
-        self.PC = -4. * np.pi / 3. * self.planet.rho_c * self.planet.CP * self.planet.L_rho**3. *\
+    def update_ic(self,T,r_IC):
+        
+        PC = -4. * np.pi / 3. * self.planet.rho_c * self.planet.CP * self.planet.L_rho**3. *\
                 (1 - self.r_IC**2. / self.planet.L_rho**2 - self.planet.A_rho* self.r_IC**4. / self.planet.L_rho**4.)**(-self.planet.gamma) \
                 * (self.dTL_dr_IC(self.r_IC) + 2. * self.planet.gamma \
                 * self.T_melt(self.r_IC) * self.r_IC / self.planet.L_rho**2. *(1 + 2. * self.planet.A_rho * self.r_IC**2. / self.planet.L_rho**2.) \
                 /(1 - self.r_IC**2. / self.planet.L_rho**2. - self.planet.A_rho * self.r_IC**4. / self.planet.L_rho**4.)) \
                 * (self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma))
                 
-        self.PL = 4. * np.pi * self.r_IC**2. * self.T_melt(self.r_IC) * self.rho(self.r_IC) * self.planet.DeltaS
+        PL = 4. * np.pi * self.r_IC**2. * self.T_melt(self.r_IC) * self.rho(self.r_IC) * self.planet.DeltaS
         
-        self.PX = 8 * np.pi**2 * self.planet.chi0 * self.planet.GC * self.planet.rho_c**2 * self.planet.beta * self.r_IC**2. \
+        PX = 8 * np.pi**2 * self.planet.chi0 * self.planet.GC * self.planet.rho_c**2 * self.planet.beta * self.r_IC**2. \
                 * self.planet.L_rho**2. / self.fC(self.planet.r_OC / self.planet.L_rho, 0) \
                 * (self.fX(self.planet.r_OC / self.planet.L_rho, self.r_IC) - self.fX(self.r_IC / self.planet.L_rho, self.r_IC))
         
-        self.dRic_dt = self.planet.Q_CMB/(self.PC + self.PL + self.PX)
+        dRic_dt = self.planet.Q_CMB/(self.PC + self.PL + self.PX)
         
-        self.r_IC = self.r_IC + self.dRic_dt
+        r_IC = self.r_IC + self.dRic_dt
         
 #        ## ENERGIES
 #        ''' Latent heat '''
@@ -238,8 +258,10 @@ class Exo(Rocky_Planet):
         self.read_parameters("M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe)+5, int(FeM)), sep=" ", skiprows=1, header=None)
         qcmb_ev.columns = ["time", "qcmb", "Tcmb"]
+        self.time_vector = qcmb_ev["time"]
+        self.qcmb = qcmb_ev["qcmb"]
         
-Exo().evolution()        
+Evolution(Exo()).run()   
    
     
     
