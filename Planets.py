@@ -105,7 +105,7 @@ class Evolution():
         plt.gca().set_xlim(left=0)        
         plt.show()
         #print self.Delta_time, self.T[0], self.T[-1]
-        print self.T
+        #print self.T
         
         
     def dTL_dr_IC(self, r):
@@ -224,7 +224,7 @@ class Evolution():
 # --------------------------------------------------------------------------- #
 
 Mp = 1.2
-XFe = 30
+XFe = 50
 FeM = 0.00
 
 class Exo(Rocky_Planet):
