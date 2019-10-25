@@ -5,6 +5,7 @@ import scipy.integrate as integrate
 import yaml
 import pandas as pd
 import sys
+from scipy.optimize import minimize_scalar
 
 year = 365.25*3600*24 #s
 GC = 6.67e-11  
@@ -44,22 +45,27 @@ class Evolution():
         self.PC = np.zeros_like(self.planet.time_vector)
         self.PL = np.zeros_like(self.planet.time_vector)
         self.PX = np.zeros_like(self.planet.time_vector)
-        self.Delta_time = self.planet.time_vector.diff()*year
+        self.Delta_time = self.planet.time_vector.diff()*year        
         
-        #self.T[0] = self.planet.T0
+        if self.planet.r_IC_0 == 0.0:
+            
+            self.T[0] = self.planet.T0
+            
+        else:
+            
+            self.T[0] = self.T_melt(self.planet.r_IC_0)
+        
         self.r_IC[0] = self.planet.r_IC_0
+        self.PC[0] = self._PC(self.r_IC[0])
+        self.PL[0] = self._PL(self.r_IC[0])
+        self.PX[0] = self._PX(self.r_IC[0])
                           
     # Run evolution model          
     def run(self):
         for i,time in enumerate(self.planet.time_vector[1:]):
             
-            if self.planet.r_IC_0 == 0.0 or self.T[i] > self.planet.TL0:
-                
-                self.T[0] = self.planet.T0
-                self.PC[0] = self._PC(self.r_IC[0])
-                self.PL[0] = self._PL(self.r_IC[0])
-                self.PX[0] = self._PX(self.r_IC[0])
-                
+            if self.r_IC[i] == 0.0 and self.T[i] > self.planet.TL0:
+                              
                 T, dT_dt,r_IC, drIC_dt, PC, PL, PX =  self.update_noic(self.T[i],self.Delta_time[i+1])
                 self.T[i+1] = T 
                 self.dT_dt[i+1] = dT_dt
@@ -68,15 +74,14 @@ class Evolution():
                 self.PC[i+1] = PC
                 self.PL[i+1] = PL
                 self.PX[i+1] = PX
-                #print i, T, dT_dt, PC, drIC_dt,r_IC#, PC, PL, PX
+                #print i#, T, dT_dt, PC, drIC_dt,r_IC#, PC, PL, PX
+                #print i, PC, PL, PX, T, r_IC
                 
-            else:  
+                if self.T[i+1] < self.planet.TL0:
+
+                    self.r_IC[i+1] = self.find_r_IC(T)
                 
-                self.T[i] = self.T_melt(self.r_IC[i])
-                self.r_IC[i] = self.r_IC[i]
-                self.PC[i] = self._PC(self.r_IC[i])
-                self.PL[i] = self._PL(self.r_IC[i])
-                self.PX[i] = self._PX(self.r_IC[i])
+            else:                 
                
                 T, r_IC, drIC_dt, PC, PL, PX =  self.update_ic(self.r_IC[i], self.Delta_time[i+1])
                 self.T[i+1] = T
@@ -85,7 +90,7 @@ class Evolution():
                 self.PC[i+1] = PC
                 self.PL[i+1] = PL
                 self.PX[i+1] = PX
-                #print T
+                #print i, PC#, PL, PX, T, r_IC
                         
         plt.plot(self.planet.time_vector,self.T,'+')
         plt.xlabel('Time (yrs)')
@@ -96,7 +101,8 @@ class Evolution():
         plt.plot(self.planet.time_vector,self.r_IC/1e3,'+')
         plt.xlabel('Time (yrs)')
         plt.ylabel('Inner core radius (km)')
-        plt.gca().set_xlim(left=0)        
+        plt.gca().set_xlim(left=0) 
+        plt.gca().set_ylim(bottom=0)
         plt.show()
         
         plt.plot(self.planet.time_vector,self.PC,self.planet.time_vector,self.PL,self.planet.time_vector,self.PX)
@@ -105,7 +111,7 @@ class Evolution():
         plt.gca().set_xlim(left=0)        
         plt.show()
         #print self.Delta_time, self.T[0], self.T[-1]
-        #print self.T
+        #print self.T[-1], self.planet.TL0
         
         
     def dTL_dr_IC(self, r):
@@ -153,6 +159,13 @@ class Evolution():
         * self.planet.L_rho**2. / self.fC(self.planet.r_OC / self.planet.L_rho, 0) \
         * (self.fX(self.planet.r_OC / self.planet.L_rho, r) - self.fX(r / self.planet.L_rho, r))
 
+    def pressure_diff(self,r):  #in GPa
+        K0 = self.planet.L_rho**2/3.*2.*np.pi*GC*self.planet.rho_c**2 /1e9 #in GPa
+        parenthesis = r**2/self.planet.L_rho**2-4./5.*r**4/self.planet.L_rho**4
+        return -K0*parenthesis
+    
+    def T_adiabat(self,r,T):
+        return T*(1-r**2/self.planet.L_rho**2-self.planet.A_rho*r**4/self.planet.L_rho**4)**self.planet.gamma
     
     def update_noic(self,T,Delta_time):
         
@@ -167,6 +180,9 @@ class Evolution():
         ''' Gravitational heat power '''
         PX = 0.
         
+        
+        #Q_CMB = 4*np.pi*self.planet.r_OC**2*self.qcmb
+        
         '''Temperature increase at center'''
         dT_dt = self.planet.Q_CMB/PC  
         
@@ -179,7 +195,7 @@ class Evolution():
         ''' Inner core size '''
         r_IC = 0.
         
-        return T, dT_dt,r_IC, drIC_dt, PC, PL, PX
+        return T, dT_dt,r_IC, drIC_dt, PC, PL, PX#, QCMB
         
     def update_ic(self, r_IC, Delta_time):
         
@@ -188,6 +204,8 @@ class Evolution():
         PL = self._PL(r_IC)
         
         PX = self._PX(r_IC)
+        
+        #Q_CMB = 4*np.pi*self.planet.r_OC**2*self.qcmb
 
         drIC_dt = self.planet.Q_CMB/(PC + PL + PX)
         
@@ -196,6 +214,21 @@ class Evolution():
         T = self.T_melt(r_IC)
         
         return T,r_IC, drIC_dt, PC, PL, PX
+    
+    def find_r_IC(self, T0):
+        
+        
+        def Delta_T(radius):
+            #P = self.pressure_diff(radius, rho_0, Lrho, Arho)+P0
+            Ta = self.T_adiabat(radius,T0)
+            TL = self.T_melt(radius)
+            return (Ta - TL)**2
+        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') #, constraints={'type':'ineq', 'fun': lambda x: x})  #result has to be >0
+        r_IC = res.x
+        if r_IC < 1: r_IC = np.array(0.)
+        return r_IC.tolist()
+        
+        
 
      
 #        ## ENERGIES
@@ -224,7 +257,7 @@ class Evolution():
 # --------------------------------------------------------------------------- #
 
 Mp = 1.2
-XFe = 50
+XFe = 30
 FeM = 0.00
 
 class Exo(Rocky_Planet):
