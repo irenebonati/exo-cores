@@ -50,7 +50,7 @@ def find_Lrho_Arho(profile):
      """
     rho = profile["rho(kg/m^3)"]
     radius = profile["r(m)"]
-    initial_guess = 12500, 8000e3, 0.484 # initial values from Labrosse 2015 (for the Earth)
+    initial_guess = 12502, 8039e3, 0.484 # initial values from Labrosse 2015 (for the Earth)
     popt, pcov = curve_fit(density_Labrosse2015, radius, rho, initial_guess)
     rho_0, L_rho, A_rho = popt
     return rho_0.tolist(), L_rho.tolist(), A_rho.tolist()
@@ -66,7 +66,7 @@ def Earth():
                     "CP" : 750.,             # Specific heat (J.kg-1.K-1)
                     "gamma" : 1.5,              # Grueneisen parameter
                     # Parameters obtained from the fitting of the density
-                    "rho_0" :  12502.,           # Density at center (kgm-3)
+                    "rho_c" :  12502.,           # Density at center (kgm-3)
                     "L_rho" : 8039e3,             # (m)
                     "A_rho" : 0.484,              # (no unit)
                     # Parameter obtained from the qs_**.res  
@@ -99,11 +99,6 @@ def T_liquidus_core(P, S=0):
 
 def T_adiabat(radius, Lrho, Arho, T0, gamma):
     return T0*(1-radius**2/Lrho**2-Arho*radius**4/Lrho**4)**gamma
-    
-def theoritical_density(r, *args):
-    """ Equation (5) in Labrosse 2015 """
-    rho_0, L_rho, A_rho = args
-    return rho_0*(1-r**2/L_rho**2-A_rho*r**4/L_rho**4)
 
 def gravity(r, *args):
     G = 6.67430e-11
@@ -118,16 +113,16 @@ def pressure_diff(r, *args):  #in GPa
     parenthesis = r**2/L_rho**2-4./5.*r**4/L_rho**4
     return -K0*parenthesis
 
-def find_rIC(core, S=0):
-    Temperature = core["T(K)"].values
-    Pressure = core["p(GPa)"].values
-    Radius = core["r(m)"].values
-    T_liq = T_liquidus_core(Pressure, S)
-    index = np.argmin(np.abs(Temperature-T_liq))
-    r_IC = Radius[index]
-    if r_IC == Radius[-1]:
-        r_IC = np.array(0.)
-    return r_IC
+# def find_rIC(core, S=0):
+#     Temperature = core["T(K)"].values
+#     Pressure = core["p(GPa)"].values
+#     Radius = core["r(m)"].values
+#     T_liq = T_liquidus_core(Pressure, S)
+#     index = np.argmin(np.abs(Temperature-T_liq))
+#     r_IC = Radius[index]
+#     if r_IC == Radius[-1]:
+#         r_IC = np.array(0.)
+#     return r_IC
 
 def find_r_IC_adiabat(rho_0, Lrho, Arho, P0, T0, gamma, S=0):
     def Delta_T(radius):
@@ -168,10 +163,10 @@ def write_parameter_file(filename, fig=False, folder=""):
     param["alpha_c"] = average_volume(core, "alpha(10^-5 1/s)").tolist() * 1e-5
     param["gamma"] = average_volume(core, "Gruneisen(1)").tolist()
     param["T0"] = core["T(K)"].iloc[-1].tolist()
+    param["P0"] = core["p(GPa)"].iloc[-1].tolist()
     P0 = core["p(GPa)"].iloc[-1]
     param["r_IC_0"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"])
     param["r_OC"] = core["r(m)"].iloc[0].tolist()
-    #param["r_IC_0"] = find_rIC(core).tolist() # this function for r_IC is not as good (only on the grid)
     param["TL0"] = T_liquidus_core(P0, 0).tolist()
     param["K_c"] = 1403.e9 # Earth's bulk modulus at the center (Labrosse+2015)
     output_filename = folder+"M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
@@ -184,7 +179,7 @@ def write_parameter_file(filename, fig=False, folder=""):
         radius = core["r(m)"]
         fig, ax3 = plt.subplots(2,2)
         figure(core, ax3)
-        ax3[1,0].plot(radius[::100]/1e3, theoritical_density(radius[::100], param["rho_0"], param["L_rho"], param["A_rho"]), '+')
+        ax3[1,0].plot(radius[::100]/1e3, density_Labrosse2015(radius[::100], param["rho_0"], param["L_rho"], param["A_rho"]), '+')
         ax3[0,1].plot(radius[::100]/1e3, gravity(radius[::100], param["rho_0"], param["L_rho"], param["A_rho"]), '+')
         ax3[1,1].plot(radius[::100]/1e3, pressure_diff(radius[::100], param["rho_0"], param["L_rho"], param["A_rho"])+P0, '+')
         ax3[0,0].plot(radius[::100]/1e3, T_adiabat(radius[::100], param["L_rho"], param["A_rho"], param["T0"], param["gamma"]), '+', label="fit")
@@ -219,10 +214,10 @@ def explore_all_create_yaml(folder, fig=False):
 
     
 if __name__ == "__main__":
-    filename = name_file(50, 1.2, 0)
+    filename = name_file(35, 1.0, 10)
     write_parameter_file(filename, fig=True)
-    filename = name_file(30, 1.2, 0)
-    write_parameter_file(filename, fig=True)  
-    read_qs(1.2, 55, 0, fig=True)
+    #filename = name_file(30, 1.0, 10)
+    #write_parameter_file(filename, fig=True)  
+    read_qs(1.0, 35, 10, fig=True)
     explore_all_create_yaml("With_DTcmb/", fig=True)
     plt.show()
