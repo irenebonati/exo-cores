@@ -45,6 +45,8 @@ class Evolution():
         self.PC = np.zeros_like(self.planet.time_vector)
         self.PL = np.zeros_like(self.planet.time_vector)
         self.PX = np.zeros_like(self.planet.time_vector)
+        self.Q_CMB = np.zeros_like(self.planet.time_vector)
+        self.T_CMB = np.zeros_like(self.planet.time_vector)
         self.Delta_time = self.planet.time_vector.diff()*year        
         
         if self.planet.r_IC_0 == 0.0:
@@ -59,6 +61,8 @@ class Evolution():
         self.PC[0] = self._PC(self.r_IC[0])
         self.PL[0] = self._PL(self.r_IC[0])
         self.PX[0] = self._PX(self.r_IC[0])
+        self.Q_CMB[0] = 0.
+        self.T_CMB[0] = self.T_adiabat(self.planet.r_OC,self.T[0])
                           
     # Run evolution model          
     def run(self):
@@ -66,7 +70,7 @@ class Evolution():
             
             if self.r_IC[i] == 0.0 and self.T[i] > self.planet.TL0:
                               
-                T, dT_dt,r_IC, drIC_dt, PC, PL, PX =  self.update_noic(self.T[i],self.Delta_time[i+1])
+                T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB =  self.update_noic(self.T[i],self.Delta_time[i+1],self.planet.qcmb[i])
                 self.T[i+1] = T 
                 self.dT_dt[i+1] = dT_dt
                 self.r_IC[i+1] = r_IC
@@ -74,8 +78,10 @@ class Evolution():
                 self.PC[i+1] = PC
                 self.PL[i+1] = PL
                 self.PX[i+1] = PX
+                self.Q_CMB[i+1] = Q_CMB
+                self.T_CMB[i+1] = T_CMB
                 #print i#, T, dT_dt, PC, drIC_dt,r_IC#, PC, PL, PX
-                #print i, PC, PL, PX, T, r_IC
+                print i, T, T_CMB
                 
                 if self.T[i+1] < self.planet.TL0:
 
@@ -83,35 +89,50 @@ class Evolution():
                 
             else:                 
                
-                T, r_IC, drIC_dt, PC, PL, PX =  self.update_ic(self.r_IC[i], self.Delta_time[i+1])
+                T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB =  self.update_ic(self.r_IC[i], self.Delta_time[i+1],self.planet.qcmb[i])
                 self.T[i+1] = T
                 self.r_IC[i+1] = r_IC
                 self.drIC_dt[i+1] = drIC_dt
                 self.PC[i+1] = PC
                 self.PL[i+1] = PL
                 self.PX[i+1] = PX
-                #print i, PC#, PL, PX, T, r_IC
+                self.Q_CMB[i+1] = Q_CMB
+                self.T_CMB[i+1] = T_CMB
                         
         plt.plot(self.planet.time_vector,self.T,'+')
-        plt.xlabel('Time (yrs)')
-        plt.ylabel('Temperature (K)')
+        plt.xlabel('Time (years)')
+        plt.ylabel('Temperature at the center (K)')
         plt.gca().set_xlim(left=0)        
         plt.show()
         
         plt.plot(self.planet.time_vector,self.r_IC/1e3,'+')
-        plt.xlabel('Time (yrs)')
+        plt.xlabel('Time (years)')
         plt.ylabel('Inner core radius (km)')
         plt.gca().set_xlim(left=0) 
-        plt.gca().set_ylim(bottom=0)
         plt.show()
         
-        plt.plot(self.planet.time_vector,self.PC,self.planet.time_vector,self.PL,self.planet.time_vector,self.PX)
-        plt.xlabel('Time (yrs)')
+        plt.plot(self.planet.time_vector,self.PC, label='Secular cooling')
+        plt.plot(self.planet.time_vector,self.PL,label='Latent heat')
+        plt.plot(self.planet.time_vector,self.PX, label='Gravitational heat')
+        plt.xlabel('Time (years)')
         plt.ylabel('Powers (W)')
-        plt.gca().set_xlim(left=0)        
+        plt.gca().set_xlim(left=0) 
+        plt.legend()
         plt.show()
         #print self.Delta_time, self.T[0], self.T[-1]
         #print self.T[-1], self.planet.TL0
+        
+        plt.plot(self.planet.time_vector,self.Q_CMB,'+')
+        plt.xlabel('Time (years)')
+        plt.ylabel('CMB heat flow (W)')
+        plt.gca().set_xlim(left=0)        
+        plt.show()
+        
+        plt.plot(self.planet.time_vector,self.T_CMB,'+')
+        plt.xlabel('Time (years)')
+        plt.ylabel('CMB temperature (K)')
+        plt.gca().set_xlim(left=0)        
+        plt.show()
         
         
     def dTL_dr_IC(self, r):
@@ -167,7 +188,7 @@ class Evolution():
     def T_adiabat(self,r,T):
         return T*(1-r**2/self.planet.L_rho**2-self.planet.A_rho*r**4/self.planet.L_rho**4)**self.planet.gamma
     
-    def update_noic(self,T,Delta_time):
+    def update_noic(self,T,Delta_time,qcmb):
         
         fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
         
@@ -178,16 +199,15 @@ class Evolution():
         PL = 0.
 
         ''' Gravitational heat power '''
-        PX = 0.
+        PX = 0.      
         
-        
-        #Q_CMB = 4*np.pi*self.planet.r_OC**2*self.qcmb
+        Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
         
         '''Temperature increase at center'''
-        dT_dt = self.planet.Q_CMB/PC  
+        dT_dt = Q_CMB/PC  
         
         ''' New central temperature '''
-        T = T + dT_dt * Delta_time   
+        T = T + dT_dt * Delta_time  
         
         ''' Inner core growth '''
         drIC_dt = 0.
@@ -195,9 +215,12 @@ class Evolution():
         ''' Inner core size '''
         r_IC = 0.
         
-        return T, dT_dt,r_IC, drIC_dt, PC, PL, PX#, QCMB
+        '''Temperature CMB'''
+        T_CMB = self.T_adiabat(self.planet.r_OC,T)
         
-    def update_ic(self, r_IC, Delta_time):
+        return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB
+        
+    def update_ic(self, r_IC, Delta_time,qcmb):
         
         PC = self._PC(r_IC)
         
@@ -205,15 +228,17 @@ class Evolution():
         
         PX = self._PX(r_IC)
         
-        #Q_CMB = 4*np.pi*self.planet.r_OC**2*self.qcmb
+        Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
 
-        drIC_dt = self.planet.Q_CMB/(PC + PL + PX)
+        drIC_dt = Q_CMB/(PC + PL + PX)
         
         r_IC = r_IC + drIC_dt * Delta_time
        
         T = self.T_melt(r_IC)
         
-        return T,r_IC, drIC_dt, PC, PL, PX
+        T_CMB = self.T_adiabat(self.planet.r_OC,T)
+        
+        return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB
     
     def find_r_IC(self, T0):
         
@@ -257,7 +282,7 @@ class Evolution():
 # --------------------------------------------------------------------------- #
 
 Mp = 1.2
-XFe = 30
+XFe = 50  #insert 30 for file with no initial core
 FeM = 0.00
 
 class Exo(Rocky_Planet):
