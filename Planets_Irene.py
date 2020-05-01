@@ -13,6 +13,7 @@ import yaml
 import pandas as pd
 import sympy as sp
 import warnings
+from scipy.optimize import minimize_scalar
 warnings.filterwarnings('ignore')
 
 
@@ -597,7 +598,7 @@ class Evolution():
     def _SR(self,h,r,P,S):
         '''Entropy contribution from radiogenic heating (Labrosse 2015, Eq. A18)'''
         return 4 * np.pi * self.planet.rho_c * self.planet.L_rho**3 * h / (3 * self.T_liquidus_core(P, S)) * (1 - r**2/self.planet.L_rho**2 - self.planet.A_rho \
-                * r**4/self.planet.L_rho**4)**(-self.planet.gamma) * (fC(self.planet.r_OC/self.planet.L_rho,-self.planet.gamma) - fC(r/self.planet.L_rho,-self.planet.gamma))
+                * r**4/self.planet.L_rho**4)**(-self.planet.gamma) * (self.fC(self.planet.r_OC/self.planet.L_rho,-self.planet.gamma) - fC(r/self.planet.L_rho,-self.planet.gamma))
     
     def _TR(self,r,P,S):
         '''Temperature at which radiogenic dissipation occurs (Labrosse 2015, Eq. A19)'''
@@ -755,15 +756,19 @@ plt.tight_layout()
 plt.savefig("MF_lifetime.pdf")
 plt.show()
 
-P0, K0, L, S, r = sp.symbols('P0 K0 L S r')
 
-P = P0 - K0 * (r**2/L**2 - (4*r**4)/(5*L**4))
 
-function = 6500 * (P/340)**(0.515) * 1./(1-sp.log(1-S))
-
-der = sp.diff(function,r)
-
-test = sp.diff(r**2)
-
-print ("dTL_drIC =", der)
-print ("test =",test)
+#P0, K0, L, S, rho_0, r = sp.symbols('P0 K0 L S rho_0 r')
+#
+#P = P0 - K0 * (r**2/L**2 - (4*r**4)/(5*L**4))
+#
+#M_OC = 4./3. * np.pi * rho_0 * L**3 * ()
+#
+#function = 6500 * (P/340)**(0.515) * 1./(1-sp.log(1-S))
+#
+#der = sp.diff(function,r)
+#
+#test = sp.diff(r**2)
+#
+#print ("dTL_drIC =", der)
+#print ("test =",test)
