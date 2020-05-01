@@ -27,7 +27,7 @@ k_c               = 150               # Core conductivity (estimated)
 #g_c              = 5                 # Core gravity (estimated)
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
 
-plots_folder = "Figures/"   # Folder in which to save plots
+plots_folder = "../Figures/"   # Folder in which to save plots
 
 
 class Rocky_Planet():
@@ -189,6 +189,7 @@ class Evolution():
                     self.M[i+1] = M
                     self.M_ratio[i+1] = M_ratio
                     self.P_IC[i+1] = P_IC
+
                     
                                         
             else: 
@@ -214,7 +215,7 @@ class Evolution():
                 self.M[i+1] = M
                 self.M_ratio[i+1] = M_ratio
                 self.P_IC[i+1] = P_IC
-                
+                                
 #                 print ("PL",i+1, self.PL[i+1])
 #                 print ("drICdt",i+1,self.drIC_dt[i+1]) 
 #                 print ("PICB",i+1,self.P_IC[i+1])
@@ -235,80 +236,80 @@ class Evolution():
 # ------------------------------------------------------------------------------------------------------------------- #
                 
         '''Figures'''
-#         fig, ax1 = plt.subplots()
-#         ax1.plot(self.planet.time_vector,self.T, color='rebeccapurple')
-#         ax1.set_xlabel('Time (years)')
-#         ax1.set_ylabel('Temperature at the center/ICB (K)',color='rebeccapurple')
-#         plt.gca().set_xlim(left=self.planet.time_vector[1]) 
-#         ax1.tick_params(axis='y', labelcolor='rebeccapurple')
-#         ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-#         ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
-#         ax2.set_xlabel('Time (years)')
-#         ax2.set_ylabel('Inner core radius (km)',color='tomato')
-#         ax2.tick_params(axis='y', labelcolor='tomato')
-#         plt.savefig(plots_folder + 'T+r_IC_{}ME_{}XFe_{}FeM_poster.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
-#         plt.show()
+        fig, ax1 = plt.subplots()
+        ax1.plot(self.planet.time_vector,self.T, color='rebeccapurple')
+        ax1.set_xlabel('Time (years)')
+        ax1.set_ylabel('Temperature at the center/ICB (K)',color='rebeccapurple')
+        plt.gca().set_xlim(left=self.planet.time_vector[1]) 
+        ax1.tick_params(axis='y', labelcolor='rebeccapurple')
+        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+        ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
+        ax2.set_xlabel('Time (years)')
+        ax2.set_ylabel('Inner core radius (km)',color='tomato')
+        ax2.tick_params(axis='y', labelcolor='tomato')
+        plt.savefig(plots_folder + 'T+r_IC_{}ME_{}XFe_{}FeM_poster.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
+        plt.show()
 
-#         plt.plot(self.planet.time_vector[1:],self.QC[1:], label='Secular cooling',color='lightseagreen')
-#         plt.plot(self.planet.time_vector[1:],self.QL[1:],label='Latent heat',color='sandybrown')
-#         plt.plot(self.planet.time_vector[1:],self.QX[1:], label='Gravitational heat',color='pink')
-#         plt.plot(self.planet.time_vector[1:],self.QL[1:]+self.QC[1:]+self.QX[1:], label='Total ($Q_{\mathrm{CMB}}$)',color='navy')
-#         plt.xlabel('Time (years)')
-#         plt.ylabel('Contributions to energy balance (W)')
-#         plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
-#         plt.gca().set_xlim(left=self.planet.time_vector[1])
-#         plt.legend()
-#         plt.savefig(plots_folder + 'Energy_balance_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
-#         plt.show()
+        plt.plot(self.planet.time_vector[1:],self.QC[1:], label='Secular cooling',color='lightseagreen')
+        plt.plot(self.planet.time_vector[1:],self.QL[1:],label='Latent heat',color='sandybrown')
+        plt.plot(self.planet.time_vector[1:],self.QX[1:], label='Gravitational heat',color='pink')
+        plt.plot(self.planet.time_vector[1:],self.QL[1:]+self.QC[1:]+self.QX[1:], label='Total ($Q_{\mathrm{CMB}}$)',color='navy')
+        plt.xlabel('Time (years)')
+        plt.ylabel('Contributions to energy balance (W)')
+        plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
+        plt.gca().set_xlim(left=self.planet.time_vector[1])
+        plt.legend()
+        plt.savefig(plots_folder + 'Energy_balance_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
+        plt.show()
         
-#         plt.figure(num=None, figsize=(10, 4), dpi=80, facecolor='w', edgecolor='k')
-#         plt.subplot(1, 2, 1)  
-#         plt.plot(self.planet.time_vector,self.Q_CMB,color='royalblue')
-#         plt.xlabel('Time (years)')
-#         plt.ylabel('CMB heat flow (W)')
-#         plt.gca().set_xlim(left=self.planet.time_vector[1])  
-#         plt.subplot(1, 2, 2)         
-#         plt.plot(self.planet.time_vector,self.T_CMB,color='royalblue')
-#         plt.xlabel('Time (years)')
-#         plt.ylabel('CMB temperature (K)')
-#         plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
-#         plt.gca().set_xlim(left=self.planet.time_vector[1]) 
-#         plt.subplots_adjust(wspace=0.4)
-#         plt.savefig(plots_folder + 'QCMB_TCMB_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
-#         plt.show()
+        plt.figure(num=None, figsize=(10, 4), dpi=80, facecolor='w', edgecolor='k')
+        plt.subplot(1, 2, 1)  
+        plt.plot(self.planet.time_vector,self.Q_CMB,color='royalblue')
+        plt.xlabel('Time (years)')
+        plt.ylabel('CMB heat flow (W)')
+        plt.gca().set_xlim(left=self.planet.time_vector[1])  
+        plt.subplot(1, 2, 2)         
+        plt.plot(self.planet.time_vector,self.T_CMB,color='royalblue')
+        plt.xlabel('Time (years)')
+        plt.ylabel('CMB temperature (K)')
+        plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
+        plt.gca().set_xlim(left=self.planet.time_vector[1]) 
+        plt.subplots_adjust(wspace=0.4)
+        plt.savefig(plots_folder + 'QCMB_TCMB_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
+        plt.show()
         
-#         plt.plot(self.planet.time_vector,self.F_th, label='Temperature',color='tomato')
-#         plt.plot(self.planet.time_vector,self.F_X, label='Composition',color='mediumseagreen')
-#         plt.xlabel('Time (years)')
-#         plt.ylabel('Buoyancy fluxes ($m^{2}s^{-3}$)')
-#         plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
-#         plt.gca().set_xlim(left=self.planet.time_vector[1]) 
-#         plt.legend()
-#         plt.savefig(plots_folder + 'Fluxes_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
-#         plt.show()
+        plt.plot(self.planet.time_vector,self.F_th, label='Temperature',color='tomato')
+        plt.plot(self.planet.time_vector,self.F_X, label='Composition',color='mediumseagreen')
+        plt.xlabel('Time (years)')
+        plt.ylabel('Buoyancy fluxes ($m^{2}s^{-3}$)')
+        plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
+        plt.gca().set_xlim(left=self.planet.time_vector[1]) 
+        plt.legend()
+        plt.savefig(plots_folder + 'Fluxes_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
+        plt.show()
         
-#         plt.figure(num=None, figsize=(10, 4), dpi=80, facecolor='w', edgecolor='k')
-#         plt.subplot(1, 2, 1)  
-#         plt.plot(self.planet.time_vector,self.Bc * 1e3,label='CMB',color='tomato')
-#         plt.plot(self.planet.time_vector,self.Bs * 1e3,label='Surface',color='mediumseagreen')
-#         plt.xlabel('Time (years)')
-#         plt.ylabel('rms dipole field (mT)')
-#         plt.semilogy()
-#         plt.gca().set_xlim(left=self.planet.time_vector[1]) 
-#         plt.legend()
-#         ax1 = plt.subplot(1, 2, 2) 
-#         ax1.plot(self.planet.time_vector,self.M,color='grey')
-#         ax1.set_ylabel('Magnetic moment ($A m^{2}$)')
-#         ax2 = ax1.twinx()  
-#         ax2.set_ylabel('Magnetic moment present Earth ($A m^{2}$)')  
-#         ax2.plot(self.planet.time_vector,self.M_ratio,color='grey')
-#         ax2.tick_params(axis='y')
-#         plt.xlabel('Time (years)')
-#         plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
-#         plt.gca().set_xlim(left=self.planet.time_vector[1]) 
-#         plt.subplots_adjust(wspace=0.4)
-#         plt.savefig(plots_folder + 'MField_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
-#         plt.show()
+        plt.figure(num=None, figsize=(10, 4), dpi=80, facecolor='w', edgecolor='k')
+        plt.subplot(1, 2, 1)  
+        plt.plot(self.planet.time_vector,self.Bc * 1e3,label='CMB',color='tomato')
+        plt.plot(self.planet.time_vector,self.Bs * 1e3,label='Surface',color='mediumseagreen')
+        plt.xlabel('Time (years)')
+        plt.ylabel('rms dipole field (mT)')
+        plt.semilogy()
+        plt.gca().set_xlim(left=self.planet.time_vector[1]) 
+        plt.legend()
+        ax1 = plt.subplot(1, 2, 2) 
+        ax1.plot(self.planet.time_vector,self.M,color='grey')
+        ax1.set_ylabel('Magnetic moment ($A m^{2}$)')
+        ax2 = ax1.twinx()  
+        ax2.set_ylabel('Magnetic moment present Earth ($A m^{2}$)')  
+        ax2.plot(self.planet.time_vector,self.M_ratio,color='grey')
+        ax2.tick_params(axis='y')
+        plt.xlabel('Time (years)')
+        plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(Mp),np.float(XFe)))
+        plt.gca().set_xlim(left=self.planet.time_vector[1]) 
+        plt.subplots_adjust(wspace=0.4)
+        plt.savefig(plots_folder + 'MField_{}ME_{}XFe_{}FeM.pdf'.format(Mp,XFe,FeM), bbox_inches="tight")
+        plt.show()
 
 # ------------------------------------------------------------------------------------------------------------------- #
 
@@ -318,7 +319,7 @@ class Evolution():
         fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
         
         ''' Secular cooling power '''
-        PC = (-4*np.pi/3*self.planet.rho_c*self.planet.CP*self.planet.L_rho**3*fC)
+        PC = (-4*np.pi/3*self.planet.rho_0*self.planet.CP*self.planet.L_rho**3*fC)
                 
         ''' Latent heat power '''
         PL = 0.
@@ -382,6 +383,7 @@ class Evolution():
         
         '''Thermal buoyancy'''
         F_th = self._F_th(g_c,qcmb,qc_ad)
+        
         
         '''Compositional buoyancy'''
         F_X = self._F_X(g_c,r_IC,drIC_dt)
@@ -483,9 +485,7 @@ class Evolution():
                 
         '''Magnetic moment (Am2)'''
         M = self._magn_moment(rho_OC,F_th,F_X,r_IC)
-        
-        #print (M)
-                
+                        
         M_ratio = M/magn_moment_Earth
                                                 
         return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
@@ -493,40 +493,55 @@ class Evolution():
 # ------------------------------------------------------------------------------------------------------------------- #
     
     '''Functions for calculations'''    
-#     def dTL_dr_IC(self, r,S):
-#         '''Labrosse'''
-#         S=0
-#         result = -self.planet.K_c * 2.*self.planet.dTL_dP * r / self.planet.L_rho**2. \
+#    def dTL_dr_IC(self, r,S):
+#        '''Labrosse'''
+#        S=0
+#        result = -self.planet.K_c * 2.*self.planet.dTL_dP * r / self.planet.L_rho**2. \
 #             + 3. * self.planet.dTL_dchi * self.planet.chi0 * r**2. / (self.planet.L_rho**3. * self.fC(self.planet.r_OC / self.planet.L_rho, 0.))
-#         return result
+#        print (result)
+#        return result
     
-    def dTL_dr_IC(self, r,S):
+    def dTL_dr_IC(self,r0,S):
         
         ''' Melting temperature jump at ICB '''
         '''Stixrude'''
-        A = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_c**2 *GC)/1e9
+        K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
 #         B = 6500./(1-np.log(1-S* 1e-2))
 #         der = (1.03 * self.planet.L_rho**2 * r - 1.648 * r**3) \
 #         /(self.planet.L_rho**4 * (r**2 / self.planet.L_rho**2 - (4 * r**4)/(5 * self.planet.L_rho**4))**(0.485))
 #         result = (-A/340.)**(0.515) * B * der
-
-        result = -9.84558823529412*A*(-A*(r**2/self.planet.L_rho**2 - 4*r**4/(5*self.planet.L_rho**4))/340 + self.planet.P0/340)**(-0.485)*(2*r/self.planet.L_rho**2 - 16*r**3/(5*self.planet.L_rho**4)) \
-        /(-np.log(-S* 1e-2 + 1) + 1)
-        return result
+        
+        r = sp.symbols('r')
+        
+        P = self.planet.P0 - K0 * (r**2/self.planet.L_rho**2 - (4*r**4)/(5*self.planet.L_rho**4))
+        
+        S_t = S * self.M_OC(self.planet.r_IC) /(4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,0)-self.fC(r/self.planet.L_rho,0)))
+        
+        function = 6500 * (P/340)**(0.515) * 1./(1-sp.log(1-S_t))
+        
+        derivative = sp.diff(function,r).subs(r,r0).evalf()
+        
+        #print (derivative)
+                        
+        return derivative
+    
+    def M_OC(self,r):
+        '''Equation M_OC(t) in our paper'''
+        return 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,0)-self.fC(r/self.planet.L_rho,0))
         
     def fC(self, r, delta): 
         '''fC (Eq. A1 Labrosse 2015)'''
         return r**3. * (1 - 3. / 5. * (delta + 1) * r**2.- 3. / 14. * (delta + 1) \
             * (2 * self.planet.A_rho - delta) * r**4.)
 
-    def fX(self, r, r_IC):
+    def fX(self, x, r):
         '''fX (Eq. A15 Labrosse 2015)'''
-        return (r)**3. * (-r_IC**2. / 3. / self.planet.L_rho**2. + 1./5. * (1.+r_IC**2./self.planet.L_rho**2.) \
-                *(r)**2.-13./70. * (r)**4.) 
+        return (x)**3. * (-r**2. / 3. / self.planet.L_rho**2. + 1./5. * (1.+(r**2)/self.planet.L_rho**2.) \
+                *(x)**2.-13./70. * (x)**4.) 
 
     def rho(self, r):
         ''' Density (Eq. 5 Labrosse 2015)'''
-        return self.planet.rho_c * (1. - r**2. / self.planet.L_rho**2. - self.planet.A_rho * r**4. / self.planet.L_rho**4.)
+        return self.planet.rho_0 * (1. - r**2. / self.planet.L_rho**2. - self.planet.A_rho * r**4. / self.planet.L_rho**4.)
 
     def T_melt(self, r):
         ''' Melting temperature (Eq. 14 Labrosse 2015)'''
@@ -546,7 +561,7 @@ class Evolution():
 
     def _PC(self, r,P,S):
         '''Secular cooling power (Eq. A8 Labrosse 2015)'''
-        return -4. * np.pi / 3. * self.planet.rho_c * self.planet.CP * self.planet.L_rho**3. *\
+        return -4. * np.pi / 3. * self.planet.rho_0 * self.planet.CP * self.planet.L_rho**3. *\
                 (1 - r**2. / self.planet.L_rho**2 - self.planet.A_rho* r**4. / self.planet.L_rho**4.)**(-self.planet.gamma) \
                 * (self.dTL_dr_IC(r,S) + 2. * self.planet.gamma \
                 * self.T_liquidus_core(P, S) * r / self.planet.L_rho**2. *(1 + 2. * self.planet.A_rho * r**2. / self.planet.L_rho**2.) \
@@ -555,14 +570,14 @@ class Evolution():
 
     def _PX(self, r):
         ''' Gravitational heat power (Eq. A14 Labrosse 2015)'''
-        return 8 * np.pi**2 * self.planet.chi0 * GC * self.planet.rho_c**2 * self.planet.beta * r**2. \
+        return 8 * np.pi**2 * self.planet.chi0 * GC * self.planet.rho_0**2 * self.planet.beta * r**2. \
         * self.planet.L_rho**2. / self.fC(self.planet.r_OC / self.planet.L_rho, 0) \
         * (self.fX(self.planet.r_OC / self.planet.L_rho, r) - self.fX(r / self.planet.L_rho, r))
 
     def pressure_diff(self,r):  
         '''Pressure difference (GPa)'''
-        K0 = self.planet.L_rho**2/3.*2.*np.pi*GC*self.planet.rho_c**2 /1e9 #in GPa
-        K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_c**2 *GC)/1e9
+        K0 = self.planet.L_rho**2/3.*2.*np.pi*GC*self.planet.rho_0**2 /1e9 #in GPa
+        K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
         factor = (r**2)/(self.planet.L_rho**2)-(4.*r**4)/(5.*self.planet.L_rho**4)
         return -K0*factor
     
@@ -584,7 +599,7 @@ class Evolution():
     
     def _SC(self,r,drIC_dt,P,S):
         '''Entropy contribution of secular cooling (Labrosse 2015, Eq. A11)'''
-        return (-4 * np.pi * self.planet.rho_c * self.planet.CP * self.planet.L_rho**3)/(3*self.T_liquidus_core(P, S)) * (self.dTL_dr_IC(r,S) \
+        return (-4 * np.pi * self.planet.rho_0 * self.planet.CP * self.planet.L_rho**3)/(3*self.T_liquidus_core(P, S)) * (self.dTL_dr_IC(r,S) \
                 + 2 * self.planet.gamma * self.T_liquidus_core(P, S)*r/self.planet.L_rho**2 *(1 + 2 * self.planet.A_rho * r**2 / self.planet.L_rho**2) \
                 /(1 - r**2 / self.planet.L_rho**2 - self.planet.A_rho * r**4 / self.planet.L_rho**4)) * (self.fC(self.planet.r_OC/self.planet.L_rho,0) \
                 - self.fC(r/self.planet.L_rho,0)) * drIC_dt
@@ -597,8 +612,8 @@ class Evolution():
     
     def _SR(self,h,r,P,S):
         '''Entropy contribution from radiogenic heating (Labrosse 2015, Eq. A18)'''
-        return 4 * np.pi * self.planet.rho_c * self.planet.L_rho**3 * h / (3 * self.T_liquidus_core(P, S)) * (1 - r**2/self.planet.L_rho**2 - self.planet.A_rho \
-                * r**4/self.planet.L_rho**4)**(-self.planet.gamma) * (self.fC(self.planet.r_OC/self.planet.L_rho,-self.planet.gamma) - fC(r/self.planet.L_rho,-self.planet.gamma))
+        return 4 * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * h / (3 * self.T_liquidus_core(P, S)) * (1 - r**2/self.planet.L_rho**2 - self.planet.A_rho \
+                * r**4/self.planet.L_rho**4)**(-self.planet.gamma) * (self.fC(self.planet.r_OC/self.planet.L_rho,-self.planet.gamma) - self.fC(r/self.planet.L_rho,-self.planet.gamma))
     
     def _TR(self,r,P,S):
         '''Temperature at which radiogenic dissipation occurs (Labrosse 2015, Eq. A19)'''
@@ -649,11 +664,12 @@ class Evolution():
     
     def _buoyancy_flux(self,F_th,F_X):
         '''Buoyancy flux (from Driscoll and Bercovici, eq. 35)'''
-        return F_th + F_X
+        buoyancy_flux = F_th + F_X
+        return buoyancy_flux
     
     def _F_th(self,g_c,q_cmb,qc_ad):
         '''Thermal buoyancy'''
-        return self.planet.alpha_c * g_c / self.planet.rho_c / self.planet.CP * (q_cmb - qc_ad)
+        return self.planet.alpha_c * g_c / self.planet.rho_0 / self.planet.CP * (q_cmb - qc_ad)
     
     def _qc_ad(self,k_c,T_cmb,r_IC):
         '''Isentropic heat flux at the CMB, unit: W m-2'''
@@ -661,11 +677,11 @@ class Evolution():
     
     def _F_X(self,g_c,r_IC,drIC_dt):
         '''Compositional buoyancy'''
-        return g_c * r_IC / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_c * (r_IC/self.planet.r_OC)**2 * drIC_dt
+        return g_c * r_IC / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r_IC/self.planet.r_OC)**2 * drIC_dt
     
     def _density(self,r):
         '''Planetary density'''
-        return self.planet.rho_c * (1-r**2/self.planet.L_rho**2 - self.planet.A_rho * r**4/self.planet.L_rho**4)
+        return self.planet.rho_0 * (1-r**2/self.planet.L_rho**2 - self.planet.A_rho * r**4/self.planet.L_rho**4)
     
     def _R_planet(self, XFe,Mp):
         '''Planetary radius (Noack + Lasbleis paper), unit: m'''
@@ -677,8 +693,8 @@ class Evolution():
         return GC*X_CMF*Mp*M_Earth/(self.planet.r_OC)**2
     
 '''Planetary parameters'''
-Mp = 1.5
-XFe = 60   # 50: inner core. 30: no inner core
+Mp = 1.2
+XFe = 50   # 50: inner core. 30: no inner core
 FeM = 0.00 # 0.00
 S = 0.0   # percentage of light elements in the core
 
@@ -703,58 +719,58 @@ if __name__ == '__main__':
     Evolution(Exo(Mp,XFe,FeM)).run()
     
 
-Masses = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2.]
-Fe = [20 , 30 , 40 , 50 , 60 , 70]
-FeM = 0
-S = 0.0
-
-M, F = np.meshgrid(Masses, Fe)
-MF_lifetime = np.zeros_like(M)
-r_IC_end = np.zeros_like(M)
-Q_CMB_end = np.zeros_like(M)
-
-for i, mass in enumerate(Masses):
-    for j,iron in enumerate(Fe):
-        Mp = mass
-        XFe = iron
-        evo = Evolution(Exo(Mp,XFe,FeM))
-        evo.run()
-        r_IC_end[j,i] = evo.r_IC[-1]/1e3      # Final IC radius (m)
-        MF_lifetime[j,i] = evo.t_mf           # Longest MF lifetime (Gyr)
-        Q_CMB_end[j,i] = evo.Q_CMB[-1]        # CMB heat flow (W)  
-        
-ax = plt.figure()
-plt.contourf(M, F, r_IC_end, 20, cmap = plt.cm.magma)
-plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
-plt.ylabel("Fe content (wt.%)")
-cb = plt.colorbar()
-cb.set_label("ICB radius (km)")
-plt.tight_layout()
-plt.title('Inner core radius after 5 Ga')
-plt.savefig("r_ICB_final.pdf")
-plt.show()
-
-ax = plt.figure()
-plt.contourf(M, F, Q_CMB_end, 20, cmap = plt.cm.magma)
-plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
-plt.ylabel("Fe content (wt.%)")
-cb = plt.colorbar()
-cb.set_label("Final CMB heat flow (W)")
-plt.title("CMB heat flow after 5 Ga")
-plt.tight_layout()
-plt.savefig("QCMB_final.pdf")
-plt.show()
-
-ax = plt.figure()
-plt.contourf(M, F, MF_lifetime, 20, cmap = plt.cm.magma)
-plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
-plt.ylabel("Fe content (wt.%)")
-cb = plt.colorbar()
-cb.set_label("Magnetic field lifetime (Gyr)")
-plt.title("Magnetic field lifetime")
-plt.tight_layout()
-plt.savefig("MF_lifetime.pdf")
-plt.show()
+#Masses = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2.]
+#Fe = [20 , 30 , 40 , 50 , 60 , 70]
+#FeM = 0
+#S = 0.0
+#
+#M, F = np.meshgrid(Masses, Fe)
+#MF_lifetime = np.zeros_like(M)
+#r_IC_end = np.zeros_like(M)
+#Q_CMB_end = np.zeros_like(M)
+#
+#for i, mass in enumerate(Masses):
+#    for j,iron in enumerate(Fe):
+#        Mp = mass
+#        XFe = iron
+#        evo = Evolution(Exo(Mp,XFe,FeM))
+#        evo.run()
+#        r_IC_end[j,i] = evo.r_IC[-1]/1e3      # Final IC radius (m)
+#        MF_lifetime[j,i] = evo.t_mf           # Longest MF lifetime (Gyr)
+#        Q_CMB_end[j,i] = evo.Q_CMB[-1]        # CMB heat flow (W)  
+#        
+#ax = plt.figure()
+#plt.contourf(M, F, r_IC_end, 20, cmap = plt.cm.magma)
+#plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
+#plt.ylabel("Fe content (wt.%)")
+#cb = plt.colorbar()
+#cb.set_label("ICB radius (km)")
+#plt.tight_layout()
+#plt.title('Inner core radius after 5 Ga')
+#plt.savefig("r_ICB_final.pdf")
+#plt.show()
+#
+#ax = plt.figure()
+#plt.contourf(M, F, Q_CMB_end, 20, cmap = plt.cm.magma)
+#plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
+#plt.ylabel("Fe content (wt.%)")
+#cb = plt.colorbar()
+#cb.set_label("Final CMB heat flow (W)")
+#plt.title("CMB heat flow after 5 Ga")
+#plt.tight_layout()
+#plt.savefig("QCMB_final.pdf")
+#plt.show()
+#
+#ax = plt.figure()
+#plt.contourf(M, F, MF_lifetime, 20, cmap = plt.cm.magma)
+#plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
+#plt.ylabel("Fe content (wt.%)")
+#cb = plt.colorbar()
+#cb.set_label("Magnetic field lifetime (Gyr)")
+#plt.title("Magnetic field lifetime")
+#plt.tight_layout()
+#plt.savefig("MF_lifetime.pdf")
+#plt.show()
 
 
 
