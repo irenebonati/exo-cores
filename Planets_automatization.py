@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Fri May  1 14:42:23 2020
+Created on Sun May  3 15:17:45 2020
 
 @author: irenebonati
 """
@@ -16,7 +16,6 @@ import warnings
 from scipy.optimize import minimize_scalar
 warnings.filterwarnings('ignore')
 
-
 year              = 365.25*3600*24    # 1 year (s)
 GC                = 6.67e-11          # Gravitational constant (m3 kg-1 s-2)
 Ak                = 2.39              # Radial dependence of conductivity
@@ -28,7 +27,6 @@ k_c               = 150               # Core conductivity (estimated)
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
 
 plots_folder = "../Figures/"   # Folder in which to save plots
-
 
 class Rocky_Planet():
 
@@ -44,12 +42,12 @@ class Rocky_Planet():
                 print(exc)
         for k, v in dict_param.items():
             setattr(self, k, float(v))
-            
+
 
 class Evolution():
 
     def __init__(self, planet):
-        self.planet = planet
+        self.planet = planet            
         
         '''Initialize matrices'''
         self.r_IC = np.zeros_like(self.planet.time_vector)
@@ -189,7 +187,6 @@ class Evolution():
                     self.M[i+1] = M
                     self.M_ratio[i+1] = M_ratio
                     self.P_IC[i+1] = P_IC
-
                     
                                         
             else: 
@@ -215,7 +212,7 @@ class Evolution():
                 self.M[i+1] = M
                 self.M_ratio[i+1] = M_ratio
                 self.P_IC[i+1] = P_IC
-                                
+                
 #                 print ("PL",i+1, self.PL[i+1])
 #                 print ("drICdt",i+1,self.drIC_dt[i+1]) 
 #                 print ("PICB",i+1,self.P_IC[i+1])
@@ -384,9 +381,8 @@ class Evolution():
         '''Thermal buoyancy'''
         F_th = self._F_th(g_c,qcmb,qc_ad)
         
-        
         '''Compositional buoyancy'''
-        F_X = self._F_X(g_c,r_IC,drIC_dt)
+        F_X = 0 #self._F_X(g_c,r_IC,drIC_dt)
         
         R_planet = self._R_planet(XFe,Mp)
         rho_OC = self._density(self.planet.r_OC)
@@ -424,7 +420,7 @@ class Evolution():
                         
         '''Inner core radius'''
         r_IC = r_IC + drIC_dt * Delta_time
-                                                
+                                                        
         P_IC = self.pressure_diff(r_IC) + self.planet.P0
         
         '''Temperature at the ICB'''        
@@ -443,25 +439,6 @@ class Evolution():
         '''Gravitational heat power'''
         QX = PX*drIC_dt
         
-#         '''Entropy contribution of secular cooling'''
-#         SC = self._SC(r_IC,drIC_dt,P_IC,S)
-        
-#         TC = self._TC(r_IC,P_IC,S)
-        
-#         '''Entropy contribution of radiocativity (assumed to be 0)'''
-#         SR = 0.
-        
-#         TR = self._TR(r_IC,P_IC,S)
-
-#         '''Entropy contribution of conduction'''
-#         Sk = self._Sk(r_IC)
-        
-#         '''Dissipation temperature'''
-#         Tphi = self._Tphi(T,r_IC)
-        
-#         '''Efficiency factor'''
-#         phi = self._eff_ic(Tphi,TC,T_CMB,QC,TR,0,Sk,QX,T,QC,QL) 
-        
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,r_IC)
         
@@ -473,7 +450,7 @@ class Evolution():
         
         '''Compositional buoyancy'''
         F_X = self._F_X(g_c,r_IC,drIC_dt)
-                
+                        
         R_planet = self._R_planet(XFe,Mp)
         rho_OC = self._density(self.planet.r_OC)
                 
@@ -493,13 +470,12 @@ class Evolution():
 # ------------------------------------------------------------------------------------------------------------------- #
     
     '''Functions for calculations'''    
-#    def dTL_dr_IC(self, r,S):
-#        '''Labrosse'''
-#        S=0
-#        result = -self.planet.K_c * 2.*self.planet.dTL_dP * r / self.planet.L_rho**2. \
+#     def dTL_dr_IC(self, r,S):
+#         '''Labrosse'''
+#         S=0
+#         result = -self.planet.K_c * 2.*self.planet.dTL_dP * r / self.planet.L_rho**2. \
 #             + 3. * self.planet.dTL_dchi * self.planet.chi0 * r**2. / (self.planet.L_rho**3. * self.fC(self.planet.r_OC / self.planet.L_rho, 0.))
-#        print (result)
-#        return result
+#         return result
     
     def dTL_dr_IC(self,r0,S):
         
@@ -520,14 +496,13 @@ class Evolution():
         function = 6500 * (P/340)**(0.515) * 1./(1-sp.log(1-S_t))
         
         derivative = sp.diff(function,r).subs(r,r0).evalf()
-        
-        #print (derivative)
-                        
+                
         return derivative
     
     def M_OC(self,r):
         '''Equation M_OC(t) in our paper'''
         return 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,0)-self.fC(r/self.planet.L_rho,0))
+        
         
     def fC(self, r, delta): 
         '''fC (Eq. A1 Labrosse 2015)'''
@@ -647,8 +622,13 @@ class Evolution():
                 + Tphi / T_CMB * QX + (Tphi * (T_ICB-T_CMB)/(T_CMB * T_ICB)) * (QICB + QL)
     
     def _Bc(self,rho_OC,F_th,F_X,r_IC):
-        '''rms dipole field intensity at the CMB (Olson + Christensen 2006, unit:T)'''
-        return beta * np.sqrt(rho_OC * mu_0) * ((F_th+F_X)*self.planet.r_OC)**(1./3.)
+        
+        if (F_th+F_X)<0:
+            Bc = 0
+        else:
+            '''rms dipole field intensity at the CMB (Olson + Christensen 2006, unit:T)'''
+            Bc = beta * np.sqrt(rho_OC * mu_0) * ((F_th+F_X)*self.planet.r_OC)**(1./3.)
+        return Bc
     
     def _Bs (self,Bc,r_planet):
         '''rms dipole field intensity at the planetary surface, unit:T'''
@@ -659,13 +639,12 @@ class Evolution():
         if (F_th + F_X) < 0:
             M = 0
         else:
-            M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(rho_OC/mu_0) * ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1/3)
+            M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(rho_OC/mu_0) * ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
         return M
     
     def _buoyancy_flux(self,F_th,F_X):
         '''Buoyancy flux (from Driscoll and Bercovici, eq. 35)'''
-        buoyancy_flux = F_th + F_X
-        return buoyancy_flux
+        return F_th + F_X
     
     def _F_th(self,g_c,q_cmb,qc_ad):
         '''Thermal buoyancy'''
@@ -675,9 +654,9 @@ class Evolution():
         '''Isentropic heat flux at the CMB, unit: W m-2'''
         return k_c * T_cmb * self.planet.r_OC / (6340000)**2
     
-    def _F_X(self,g_c,r_IC,drIC_dt):
+    def _F_X(self,g_c,r,drIC_dt):
         '''Compositional buoyancy'''
-        return g_c * r_IC / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r_IC/self.planet.r_OC)**2 * drIC_dt
+        return g_c * r / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
     
     def _density(self,r):
         '''Planetary density'''
@@ -705,7 +684,7 @@ class Exo(Rocky_Planet):
     
     def parameters(self,Mp,XFe,FeM):
         '''Load parameter files'''
-        os.chdir("/Users/irenebonati/Desktop/core/WITH_DTCMB")
+        os.chdir("/Users/irenebonati/Desktop/core/With_DTcmb")
         self.read_parameters("M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml".format(Mp, XFe, FeM))
         qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe)+5, int(FeM)), sep=" ", skiprows=1, header=None)
@@ -717,74 +696,3 @@ class Exo(Rocky_Planet):
 if __name__ == '__main__': 
        
     Evolution(Exo(Mp,XFe,FeM)).run()
-    
-
-#Masses = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2.]
-#Fe = [20 , 30 , 40 , 50 , 60 , 70]
-#FeM = 0
-#S = 0.0
-#
-#M, F = np.meshgrid(Masses, Fe)
-#MF_lifetime = np.zeros_like(M)
-#r_IC_end = np.zeros_like(M)
-#Q_CMB_end = np.zeros_like(M)
-#
-#for i, mass in enumerate(Masses):
-#    for j,iron in enumerate(Fe):
-#        Mp = mass
-#        XFe = iron
-#        evo = Evolution(Exo(Mp,XFe,FeM))
-#        evo.run()
-#        r_IC_end[j,i] = evo.r_IC[-1]/1e3      # Final IC radius (m)
-#        MF_lifetime[j,i] = evo.t_mf           # Longest MF lifetime (Gyr)
-#        Q_CMB_end[j,i] = evo.Q_CMB[-1]        # CMB heat flow (W)  
-#        
-#ax = plt.figure()
-#plt.contourf(M, F, r_IC_end, 20, cmap = plt.cm.magma)
-#plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
-#plt.ylabel("Fe content (wt.%)")
-#cb = plt.colorbar()
-#cb.set_label("ICB radius (km)")
-#plt.tight_layout()
-#plt.title('Inner core radius after 5 Ga')
-#plt.savefig("r_ICB_final.pdf")
-#plt.show()
-#
-#ax = plt.figure()
-#plt.contourf(M, F, Q_CMB_end, 20, cmap = plt.cm.magma)
-#plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
-#plt.ylabel("Fe content (wt.%)")
-#cb = plt.colorbar()
-#cb.set_label("Final CMB heat flow (W)")
-#plt.title("CMB heat flow after 5 Ga")
-#plt.tight_layout()
-#plt.savefig("QCMB_final.pdf")
-#plt.show()
-#
-#ax = plt.figure()
-#plt.contourf(M, F, MF_lifetime, 20, cmap = plt.cm.magma)
-#plt.xlabel("Planetary mass ($M_{p}/M_{Earth}$)")
-#plt.ylabel("Fe content (wt.%)")
-#cb = plt.colorbar()
-#cb.set_label("Magnetic field lifetime (Gyr)")
-#plt.title("Magnetic field lifetime")
-#plt.tight_layout()
-#plt.savefig("MF_lifetime.pdf")
-#plt.show()
-
-
-
-#P0, K0, L, S, rho_0, r = sp.symbols('P0 K0 L S rho_0 r')
-#
-#P = P0 - K0 * (r**2/L**2 - (4*r**4)/(5*L**4))
-#
-#M_OC = 4./3. * np.pi * rho_0 * L**3 * ()
-#
-#function = 6500 * (P/340)**(0.515) * 1./(1-sp.log(1-S))
-#
-#der = sp.diff(function,r)
-#
-#test = sp.diff(r**2)
-#
-#print ("dTL_drIC =", der)
-#print ("test =",test)
