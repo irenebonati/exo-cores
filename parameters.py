@@ -7,7 +7,7 @@ import glob
 from scipy.optimize import curve_fit, minimize_scalar # for fitting the density with a function
 
 
-MEarth = 5.972e24 #kge
+MEarth = 5.972e24 #kg
 R_Earth = 6371 #km
 G = 6.67384e-11 #m3/kg/s2
 
@@ -97,6 +97,10 @@ def T_liquidus_core(P, S=0):
     """ T_{\rm melt} = 6500 * (p/340)^{0.515} / (1 - ln(1-X_{\rm S}) ) """
     return 6500.*(P/340)**0.515/(1-np.log(1-S))
 
+def T_liquidus_mantle(P, FeM):
+    """ 5400 * (p/140)^{0.48} / (1 - ln(1-\#Fe_{\rm M}) ) """
+    return 5400.*(P/140)**0.48/(1-np.log(1-FeM))
+
 def T_adiabat(radius, Lrho, Arho, T0, gamma):
     return T0*(1-radius**2/Lrho**2-Arho*radius**4/Lrho**4)**gamma
 
@@ -134,6 +138,15 @@ def find_r_IC_adiabat(rho_0, Lrho, Arho, P0, T0, gamma, S=0):
     r_IC = res.x
     if r_IC < 1: r_IC = np.array(0.)
     return r_IC.tolist()
+
+def find_CMB(profiles):
+    core = profiles[profiles["Material-Parameter"]==8.]
+    #print(core)
+    index_max = core["r(m)"].idxmax()
+    return index_max, core["r(m)"].iloc[0], core["p(GPa)"].iloc[0], core["T(K)"].iloc[0]
+    
+def center(profiles): 
+    return profiles["r(m)"].iloc[-1], profiles["p(GPa)"].iloc[-1], profiles["T(K)"].iloc[-1]
 
 def figure(data, ax, symb="-"): 
     ax[0,0].plot(data["r(m)"]/1e3, data["T(K)"], symb)
