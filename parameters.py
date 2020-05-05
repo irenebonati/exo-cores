@@ -7,7 +7,7 @@ import glob
 from scipy.optimize import curve_fit, minimize_scalar # for fitting the density with a function
 
 
-MEarth = 5.972e24 #kge
+MEarth = 5.972e24 #kg
 R_Earth = 6371 #km
 G = 6.67384e-11 #m3/kg/s2
 
@@ -24,7 +24,7 @@ def read_data_profiles(filename, core=False):
     return data
 
 def read_qs(mass, CFe, FeM, fig=False):
-    names = ["t(yr)", "qc(W/m²)", "TCMB(K)"] 
+    names = ["t(yr)", "qc(W/m2)", "TCMB(K)"]
     filename = "qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*mass),int(CFe), int(FeM))
     data = pd.read_csv(filename, skipinitialspace=True, sep=" ", names=names, skiprows=[0])
     if fig: 
@@ -97,6 +97,10 @@ def T_liquidus_core(P, S=0):
     """ T_{\rm melt} = 6500 * (p/340)^{0.515} / (1 - ln(1-X_{\rm S}) ) """
     return 6500.*(P/340)**0.515/(1-np.log(1-S))
 
+def T_liquidus_mantle(P, FeM):
+    """ 5400 * (p/140)^{0.48} / (1 - ln(1-\#Fe_{\rm M}) ) """
+    return 5400.*(P/140)**0.48/(1-np.log(1-FeM))
+
 def T_adiabat(radius, Lrho, Arho, T0, gamma):
     return T0*(1-radius**2/Lrho**2-Arho*radius**4/Lrho**4)**gamma
 
@@ -135,6 +139,15 @@ def find_r_IC_adiabat(rho_0, Lrho, Arho, P0, T0, gamma, S=0):
     if r_IC < 1: r_IC = np.array(0.)
     return r_IC.tolist()
 
+def find_CMB(profiles):
+    core = profiles[profiles["Material-Parameter"]==8.]
+    #print(core)
+    index_max = core["r(m)"].idxmax()
+    return index_max, core["r(m)"].iloc[0], core["p(GPa)"].iloc[0], core["T(K)"].iloc[0]
+    
+def center(profiles): 
+    return profiles["r(m)"].iloc[-1], profiles["p(GPa)"].iloc[-1], profiles["T(K)"].iloc[-1]
+
 def figure(data, ax, symb="-"): 
     ax[0,0].plot(data["r(m)"]/1e3, data["T(K)"], symb)
     ax[0,1].plot(data["r(m)"]/1e3, data["g(m/s^2)"], symb)
@@ -147,34 +160,49 @@ def figure(data, ax, symb="-"):
     ax[1,0].set_xlabel("Radius (km)")
     ax[1,1].set_xlabel("Radius (km)")
 
-def write_parameter_file(filename, fig=False, folder=""):
-    """ Write the yaml file including all the parameters """
-    # extract the profile
-    core = read_data_profiles(filename, core=True)
+
+def calculate_parameters(filename):
+    data = read_data_profiles(filename)
+    core = data[data["Material-Parameter"]==8.]
+    # core = read_data_profiles(filename, core=True)
+    # print(core)
     # extract the mass, XFe, FeM
     newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in filename[:-4])
     Mp, XFe, FeM = [float(i) for i in newstr.split()]
     # initialize parameters with Earth
     param = Earth()
     #update parameters
+    param["r_planet"] = data["r(m)"].iloc[0].tolist()
     param["Mp"], param["XFe"], param["FeM"] = Mp, XFe, FeM
-    param["rho_0"], param["L_rho"], param["A_rho"] = find_Lrho_Arho(core)
-    param["CP"] = average_volume(core, "Cp(J/kgK)").tolist()
+    param["rho_0"], param["L_rho"], param["A_rho"] = find_Lrho_Arho(core) #rho_0 is the density at the center
+    param["CP"] = average_volume(core, "Cp(J/kgK)").tolist()  #average Cp
     param["alpha_c"] = average_volume(core, "alpha(10^-5 1/s)").tolist() * 1e-5
     param["gamma"] = average_volume(core, "Gruneisen(1)").tolist()
-    param["T0"] = core["T(K)"].iloc[-1].tolist()
-    param["P0"] = core["p(GPa)"].iloc[-1].tolist()
+    param["T0"] = core["T(K)"].iloc[-1].tolist() #at the center
+    param["P0"] = core["p(GPa)"].iloc[-1].tolist() #at the center
+    param["Tcmb"] = core["T(K)"].iloc[0].tolist() #at the CMB
+    param["Pcmb"] = core["p(GPa)"].iloc[0].tolist() #at the CMB
     P0 = core["p(GPa)"].iloc[-1]
-    param["r_IC_0"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"])
+    param["r_IC_0"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"], S=0.)
+    param["r_IC_005"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"], S=0.05)
+    param["r_IC_011"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"], S=0.11)
     param["r_OC"] = core["r(m)"].iloc[0].tolist()
     param["TL0"] = T_liquidus_core(P0, 0).tolist()
     param["K_c"] = 1403.e9 # Earth's bulk modulus at the center (Labrosse+2015)
-    output_filename = folder+"M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
+    return param, core
+
+def write_parameter_file(filename, fig=False, folder=""):
+    """ Write the yaml file including all the parameters """
+    param, core = calculate_parameters(filename)
+    output_filename = filename[:-4]+".yaml"
+    #print(output_filename)
+    #print(param)
+    # folder+filename # "M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
     # create the yaml parameter file
     with open(output_filename, 'w') as outfile:
         yaml.dump(param, outfile, default_flow_style=False)
     # if necessary, plot the figure to check the fits and values
-    if fig: 
+    if fig:
         #rho = core["rho(kg/m^3)"]
         radius = core["r(m)"]
         fig, ax3 = plt.subplots(2,2)
@@ -186,23 +214,30 @@ def write_parameter_file(filename, fig=False, folder=""):
         ax3[0,0].plot(radius/1e3, T_liquidus_core(pressure_diff(radius, param["rho_0"], param["L_rho"], param["A_rho"])+P0), label="Melting T")
         ax3[0,0].plot(np.array([param["r_IC_0"], param["r_IC_0"]])/1e3, [core["T(K)"].iloc[-1], core["T(K)"].iloc[0]])
         ax3[0,0].legend()
-    return Mp, XFe, FeM, param["rho_0"], param["L_rho"], param["A_rho"]
-        
+    return param #param["Mp"], param["XFe"], param["FeM"], param["rho_0"], param["L_rho"], param["A_rho"]
+
+
 def explore_all_create_yaml(folder, fig=False):
     files = [f for f in glob.glob(folder + "*.res")]
     all_files = "all_files_list.txt"
     for file in files: 
+        # print(file)
         if file[-12:] != "/data_IS.res": # we need to remove the file data_IS.res which includes every runs
-            Mp, XFe, FeM, rho, L, A = write_parameter_file(file, folder=folder)
+            param = write_parameter_file(file, folder=folder)
+            Mp, XFe, FeM, rho, L, A = param["Mp"], param["XFe"], param["FeM"], param["rho_0"], param["L_rho"], param["A_rho"]
             with open(all_files, 'a+') as the_file:
-                the_file.write('{} {} {} {} {} {}\n'.format(Mp, XFe, FeM, rho, L, A))
-    if fig:
+                the_file.write('{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}\n'.format(Mp, XFe, FeM, rho, L, A,
+                                                                  param["r_IC_0"], param["r_IC_005"], param["r_IC_011"],
+                                                                  param["r_OC"], param["r_planet"],
+                                                                  param["Pcmb"], param["Tcmb"],
+                                                                  param["P0"], param["T0"]))
+    if fig:  #TODO to be changed (the names are not correct)
         all_files = "all_files_list.txt"
-        names = ["Mp", "XFe", "FeM", "rho", "L", "A"]
+        names = ["Mp", "XFe", "FeM", "rho", "L", "A", "r_ic", "r_ic_005"]
         data = pd.read_csv(all_files, skipinitialspace=True, sep=" ", names=names)
         data = data[data["FeM"]==0.]
         fig, ax = plt.subplots(1, 2, sharex=True, sharey=True)
-        sc = ax[0].tricontourf(data["Mp"], data["XFe"], data["L"]/1e3)
+        sc = ax[0].tricontourf(data["Mp"], data["XFe"], data["r_ic"]/1e3)
         plt.colorbar(sc, ax=ax[0])
         sc = ax[1].tricontourf(data["Mp"], data["XFe"], data["rho"])
         plt.colorbar(sc, ax=ax[1])
@@ -214,10 +249,11 @@ def explore_all_create_yaml(folder, fig=False):
 
     
 if __name__ == "__main__":
-    filename = name_file(35, 1.0, 10)
-    write_parameter_file(filename, fig=True)
+    #filename = name_file(35, 1.0, 10)
+    #print(filename)
+    #write_parameter_file("With_DTcmb/"+ filename, fig=True)
     #filename = name_file(30, 1.0, 10)
     #write_parameter_file(filename, fig=True)  
-    read_qs(1.0, 35, 10, fig=True)
-    explore_all_create_yaml("With_DTcmb/", fig=True)
+    #read_qs(1.0, 35, 10, fig=True)
+    explore_all_create_yaml("With_DTcmb/", fig=False)
     plt.show()
