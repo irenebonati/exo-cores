@@ -14,7 +14,7 @@ import pandas as pd
 import sympy as sp
 from scipy.optimize import minimize_scalar
 
-plots_folder = "../Figures/"
+#plots_folder = "./Figures/"
 
 year              = 365.25*3600*24    # 1 year (s)
 GC                = 6.67e-11          # Gravitational constant (m3 kg-1 s-2)
@@ -23,7 +23,6 @@ beta              = 0.2               # Saturation constant for fast rotating po
 mu_0              = 4*np.pi*1e-7      # Magnetic permeability (Hm-1)
 M_Earth           = 5.972e24          # Mass of the Earth (kg)
 k_c               = 150               # Core conductivity (estimated)
-#g_c              = 5                 # Core gravity (estimated)
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
 
 class Evolution():
@@ -87,7 +86,7 @@ class Evolution():
 
         
     '''Run evolution model'''         
-    def run(self,plot=True):
+    def run(self,plots_folder,plot=True):
         
         for i,time in enumerate(self.planet.time_vector[1:]):
             
@@ -96,27 +95,7 @@ class Evolution():
                               
                 T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],self.Delta_time[i+1],self.planet.qcmb[i])
                 '''Shift updated value to the next time step'''
-                T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-#                self.T[i+1] = T 
-#                self.dT_dt[i+1] = dT_dt
-#                self.r_IC[i+1] = r_IC
-#                self.drIC_dt[i+1] = drIC_dt
-#                self.PC[i+1] = PC
-#                self.PL[i+1] = PL
-#                self.PX[i+1] = PX
-#                self.Q_CMB[i+1] = Q_CMB
-#                self.T_CMB[i+1] = T_CMB
-#                self.QC[i+1] = QC
-#                self.QL[i+1] = QL
-#                self.QX[i+1] = QX
-#                self.qc_ad[i+1] = qc_ad
-#                self.F_th[i+1] = F_th
-#                self.F_X[i+1] = F_X
-#                self.Bc[i+1] = Bc
-#                self.Bs[i+1] = Bs
-#                self.M[i+1] = M
-#                self.M_ratio[i+1] = M_ratio
-#                self.P_IC[i+1] = P_IC                
+                T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)               
                  
                 '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
@@ -138,26 +117,6 @@ class Evolution():
                     T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],Delta_t_IC,self.planet.qcmb[i])
                     '''Shift updated value to the next time step'''
                     T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)                    
-#                    self.T[i+1] = T 
-#                    self.dT_dt[i+1] = dT_dt
-#                    self.r_IC[i+1] = r_IC
-#                    self.drIC_dt[i+1] = drIC_dt
-#                    self.PC[i+1] = PC
-#                    self.PL[i+1] = PL
-#                    self.PX[i+1] = PX
-#                    self.Q_CMB[i+1] = Q_CMB
-#                    self.T_CMB[i+1] = T_CMB
-#                    self.QC[i+1] = QC
-#                    self.QL[i+1] = QL
-#                    self.QX[i+1] = QX
-#                    self.qc_ad[i+1] = qc_ad
-#                    self.F_th[i+1] = F_th
-#                    self.F_X[i+1] = F_X
-#                    self.Bc[i+1] = Bc
-#                    self.Bs[i+1] = Bs
-#                    self.M[i+1] = M
-#                    self.M_ratio[i+1] = M_ratio
-#                    self.P_IC[i+1] = P_IC
                     
                     '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
                     r_IC_0 = 1e3
@@ -176,25 +135,6 @@ class Evolution():
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-#                        self.T[i+1] = T
-#                        self.r_IC[i+1] = r_IC
-#                        self.drIC_dt[i+1] = drIC_dt
-#                        self.PC[i+1] = PC
-#                        self.PL[i+1] = PL
-#                        self.PX[i+1] = PX
-#                        self.Q_CMB[i+1] = Q_CMB
-#                        self.T_CMB[i+1] = T_CMB   
-#                        self.QC[i+1] = QC
-#                        self.QL[i+1] = QL
-#                        self.QX[i+1] = QX
-#                        self.qc_ad[i+1] = qc_ad
-#                        self.F_th[i+1] = F_th
-#                        self.F_X[i+1] = F_X
-#                        self.Bc[i+1] = Bc
-#                        self.Bs[i+1] = Bs
-#                        self.M[i+1] = M
-#                        self.M_ratio[i+1] = M_ratio
-#                        self.P_IC[i+1] = P_IC
                                         
                     assert r_IC < r_IC_form, (r_IC,r_IC_form)
 
@@ -211,26 +151,6 @@ class Evolution():
                     '''Initial inner core --> update_ic routine'''  
                     T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],self.planet.S,ratio=ratio_0)
                     T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-
-#                    self.T[i+1] = T
-#                    self.r_IC[i+1] = r_IC
-#                    self.drIC_dt[i+1] = drIC_dt
-#                    self.PC[i+1] = PC
-#                    self.PL[i+1] = PL
-#                    self.PX[i+1] = PX
-#                    self.Q_CMB[i+1] = Q_CMB
-#                    self.T_CMB[i+1] = T_CMB   
-#                    self.QC[i+1] = QC
-#                    self.QL[i+1] = QL
-#                    self.QX[i+1] = QX
-#                    self.qc_ad[i+1] = qc_ad
-#                    self.F_th[i+1] = F_th
-#                    self.F_X[i+1] = F_X
-#                    self.Bc[i+1] = Bc
-#                    self.Bs[i+1] = Bs
-#                    self.M[i+1] = M
-#                    self.M_ratio[i+1] = M_ratio
-#                    self.P_IC[i+1] = P_IC
                     
 # ------------------------------------------------------------------------------------------------------------------- #
          
@@ -726,11 +646,9 @@ class Exo(Rocky_Planet):
     
     def parameters(self,Mp,XFe,FeM):
         '''Load parameter files'''
-        os.chdir("/Users/irenebonati/Desktop/core/With_DTcmb")
-        self.read_parameters("M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
+        self.read_parameters("./With_DTcmb/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml".format(Mp, XFe, FeM))
-        os.chdir("../Q_CMB")
-        qcmb_ev = pd.read_csv("res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(100*FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
+        qcmb_ev = pd.read_csv("./Q_CMB/res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(100*FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
         #qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe), int(100*FeM)), sep=" ", skiprows=1, header=None)
         qcmb_ev.columns = ["time", "H_rad", "T_um","T_cmb","q_surf","qcmb"]
         self.time_vector = qcmb_ev["time"] *1e6
