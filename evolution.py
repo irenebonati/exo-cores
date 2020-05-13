@@ -14,7 +14,7 @@ import pandas as pd
 import sympy as sp
 from scipy.optimize import minimize_scalar
 
-plots_folder = "../Figures/"
+plots_folder = "./Figures/"
 
 year              = 365.25*3600*24    # 1 year (s)
 GC                = 6.67e-11          # Gravitational constant (m3 kg-1 s-2)
@@ -698,24 +698,17 @@ class Evolution():
         X_CMF = (XFe*1e-2 - FeM*1e-2)/(1-FeM*1e-2)
         return GC*X_CMF*Mp*M_Earth/(self.planet.r_OC)**2
 
+
+class Evolution_Bouchet2013(Evolution):
     
+    def T_liquidus_core(self,P, S):
+        return 0.
+
+
+    
+
+
 class Rocky_Planet():
-
-    def __init__(self):
-        self.parameters()
-
-    def read_parameters(self, file): 
-        """Read parameters from yaml file"""
-        with open(file, 'r') as stream:
-            try:
-                dict_param = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-        for k, v in dict_param.items():
-            setattr(self, k, float(v))
-
-
-class Exo(Rocky_Planet):
     
     def __init__(self,Mp,XFe,FeM,S):
         self.Mp = Mp
@@ -726,13 +719,22 @@ class Exo(Rocky_Planet):
     
     def parameters(self,Mp,XFe,FeM):
         '''Load parameter files'''
-        os.chdir("/Users/irenebonati/Desktop/core/With_DTcmb")
-        self.read_parameters("M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
+        #os.chdir("./With_DTcmb/")
+        self.read_parameters("./With_DTcmb/"+"M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml".format(Mp, XFe, FeM))
-        os.chdir("../Q_CMB")
-        qcmb_ev = pd.read_csv("res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(100*FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
+        #os.chdir("../Q_CMB/")
+        qcmb_ev = pd.read_csv("./Q_CMB/"+"res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(100*FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
         #qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe), int(100*FeM)), sep=" ", skiprows=1, header=None)
         qcmb_ev.columns = ["time", "H_rad", "T_um","T_cmb","q_surf","qcmb"]
         self.time_vector = qcmb_ev["time"] *1e6
         self.qcmb = qcmb_ev["qcmb"]
     
+    def read_parameters(self, file): 
+        """Read parameters from yaml file"""
+        with open(file, 'r') as stream:
+            try:
+                dict_param = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+        for k, v in dict_param.items():
+            setattr(self, k, float(v))
