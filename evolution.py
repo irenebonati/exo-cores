@@ -91,74 +91,79 @@ class Evolution():
         
         for i,time in enumerate(self.planet.time_vector[1:]):
             
-            # during the first crystallizing timestep
-            #find dt so that updatenoic returns T=Tmelt
-            #run updateic with dt0-dt
-            
             '''No initial inner core --> update_noic routine'''
             if self.r_IC[i] == 0.0 and self.T[i] > self.planet.TL0:
                               
                 T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],self.Delta_time[i+1],self.planet.qcmb[i])
                 '''Shift updated value to the next time step'''
-                self.T[i+1] = T 
-                self.dT_dt[i+1] = dT_dt
-                self.r_IC[i+1] = r_IC
-                self.drIC_dt[i+1] = drIC_dt
-                self.PC[i+1] = PC
-                self.PL[i+1] = PL
-                self.PX[i+1] = PX
-                self.Q_CMB[i+1] = Q_CMB
-                self.T_CMB[i+1] = T_CMB
-                self.QC[i+1] = QC
-                self.QL[i+1] = QL
-                self.QX[i+1] = QX
-                self.qc_ad[i+1] = qc_ad
-                self.F_th[i+1] = F_th
-                self.F_X[i+1] = F_X
-                self.Bc[i+1] = Bc
-                self.Bs[i+1] = Bs
-                self.M[i+1] = M
-                self.M_ratio[i+1] = M_ratio
-                self.P_IC[i+1] = P_IC                
-                    
+                T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
+#                self.T[i+1] = T 
+#                self.dT_dt[i+1] = dT_dt
+#                self.r_IC[i+1] = r_IC
+#                self.drIC_dt[i+1] = drIC_dt
+#                self.PC[i+1] = PC
+#                self.PL[i+1] = PL
+#                self.PX[i+1] = PX
+#                self.Q_CMB[i+1] = Q_CMB
+#                self.T_CMB[i+1] = T_CMB
+#                self.QC[i+1] = QC
+#                self.QL[i+1] = QL
+#                self.QX[i+1] = QX
+#                self.qc_ad[i+1] = qc_ad
+#                self.F_th[i+1] = F_th
+#                self.F_X[i+1] = F_X
+#                self.Bc[i+1] = Bc
+#                self.Bs[i+1] = Bs
+#                self.M[i+1] = M
+#                self.M_ratio[i+1] = M_ratio
+#                self.P_IC[i+1] = P_IC                
+                 
+                '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
                     
+                    # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(T)
                     P_IC_form = self.pressure_diff(r_IC_form)+self.planet.P0
                     
                     Tmelt = self.planet.TL0
                     ratio = (self.T[i]-Tmelt)/(self.T[i]-self.T[i+1])
-                    Delta_t_IC = ratio * self.Delta_time[i+1]
-                    dt_rem = self.Delta_time[i+1]-Delta_t_IC 
+
+                    Delta_t_IC = ratio * self.Delta_time[i+1] # Time step until Tmelt is reached
+           
+                    dt_rem = self.Delta_time[i+1]-Delta_t_IC  # Remaining time step
                     assert ratio < 1
                     assert ratio > 0
-
+                    
+                    ''' Go "back" and calculate the heat budget until an inner core starts forming --> use Delta_t_IC'''
                     T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],Delta_t_IC,self.planet.qcmb[i])
                     '''Shift updated value to the next time step'''
-                    self.T[i+1] = T 
-                    self.dT_dt[i+1] = dT_dt
-                    self.r_IC[i+1] = r_IC
-                    self.drIC_dt[i+1] = drIC_dt
-                    self.PC[i+1] = PC
-                    self.PL[i+1] = PL
-                    self.PX[i+1] = PX
-                    self.Q_CMB[i+1] = Q_CMB
-                    self.T_CMB[i+1] = T_CMB
-                    self.QC[i+1] = QC
-                    self.QL[i+1] = QL
-                    self.QX[i+1] = QX
-                    self.qc_ad[i+1] = qc_ad
-                    self.F_th[i+1] = F_th
-                    self.F_X[i+1] = F_X
-                    self.Bc[i+1] = Bc
-                    self.Bs[i+1] = Bs
-                    self.M[i+1] = M
-                    self.M_ratio[i+1] = M_ratio
-                    self.P_IC[i+1] = P_IC
+                    T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)                    
+#                    self.T[i+1] = T 
+#                    self.dT_dt[i+1] = dT_dt
+#                    self.r_IC[i+1] = r_IC
+#                    self.drIC_dt[i+1] = drIC_dt
+#                    self.PC[i+1] = PC
+#                    self.PL[i+1] = PL
+#                    self.PX[i+1] = PX
+#                    self.Q_CMB[i+1] = Q_CMB
+#                    self.T_CMB[i+1] = T_CMB
+#                    self.QC[i+1] = QC
+#                    self.QL[i+1] = QL
+#                    self.QX[i+1] = QX
+#                    self.qc_ad[i+1] = qc_ad
+#                    self.F_th[i+1] = F_th
+#                    self.F_X[i+1] = F_X
+#                    self.Bc[i+1] = Bc
+#                    self.Bs[i+1] = Bs
+#                    self.M[i+1] = M
+#                    self.M_ratio[i+1] = M_ratio
+#                    self.P_IC[i+1] = P_IC
                     
+                    '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
                     r_IC_0 = 1e3
-                    P_IC_0 = self.pressure_diff(r_IC_form)+self.planet.P0 # Is this fine?             
+                    P_IC_0 = self.pressure_diff(r_IC_form)+self.planet.P0             
                     
+                    '''Slowly start growing an inner core'''
                     timesteps = 50
                     for m in range(timesteps):
                         
@@ -166,34 +171,34 @@ class Evolution():
                         ratio_0 = ratio/2**(timesteps-m)
                         dt_rem-=dt
 
-                        '''With inner core --> update_ic routine'''  
+                        '''With inner core --> update_ic routine and use dt'''  
                         T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,self.planet.S,ratio=ratio_0)
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
-                        self.T[i+1] = T
-                        self.r_IC[i+1] = r_IC
-                        self.drIC_dt[i+1] = drIC_dt
-                        self.PC[i+1] += PC
-                        self.PL[i+1] += PL
-                        self.PX[i+1] += PX
-                        self.Q_CMB[i+1] = Q_CMB
-                        self.T_CMB[i+1] = T_CMB   
-                        self.QC[i+1] += QC
-                        self.QL[i+1] += QL
-                        self.QX[i+1] += QX
-                        self.qc_ad[i+1] = qc_ad
-                        self.F_th[i+1] = F_th
-                        self.F_X[i+1] = F_X
-                        self.Bc[i+1] = Bc
-                        self.Bs[i+1] = Bs
-                        self.M[i+1] = M
-                        self.M_ratio[i+1] = M_ratio
-                        self.P_IC[i+1] = P_IC
+                        T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
+#                        self.T[i+1] = T
+#                        self.r_IC[i+1] = r_IC
+#                        self.drIC_dt[i+1] = drIC_dt
+#                        self.PC[i+1] = PC
+#                        self.PL[i+1] = PL
+#                        self.PX[i+1] = PX
+#                        self.Q_CMB[i+1] = Q_CMB
+#                        self.T_CMB[i+1] = T_CMB   
+#                        self.QC[i+1] = QC
+#                        self.QL[i+1] = QL
+#                        self.QX[i+1] = QX
+#                        self.qc_ad[i+1] = qc_ad
+#                        self.F_th[i+1] = F_th
+#                        self.F_X[i+1] = F_X
+#                        self.Bc[i+1] = Bc
+#                        self.Bs[i+1] = Bs
+#                        self.M[i+1] = M
+#                        self.M_ratio[i+1] = M_ratio
+#                        self.P_IC[i+1] = P_IC
                                         
                     assert r_IC < r_IC_form, (r_IC,r_IC_form)
-                
-                    #r_IC = r_IC #self.r_IC[i]
-                    #P_IC = P_IC #self.P_IC[i]
+
+            else: 
 
                     dt_rem = self.Delta_time[i+1]
                     timesteps = 5
@@ -202,55 +207,31 @@ class Evolution():
                         dt = self.Delta_time[i+1]/2**(timesteps-m)
                         ratio_0 = dt/self.Delta_time[i+1] 
                         dt_rem-=dt
-
-                        '''Initial inner core --> update_ic routine'''  
-                        # T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], self.Delta_time[i+1],self.planet.qcmb[i],self.P_IC[i],S)
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC, dt,self.planet.qcmb[i],P_IC,self.planet.S,ratio=ratio_0)
-                        self.T[i+1] = T
-                        self.r_IC[i+1] = r_IC
-                        self.drIC_dt[i+1] = drIC_dt
-                        self.PC[i+1] += PC
-                        self.PL[i+1] += PL
-                        self.PX[i+1] += PX
-                        self.Q_CMB[i+1] = Q_CMB
-                        self.T_CMB[i+1] = T_CMB   
-                        self.QC[i+1] += QC
-                        self.QL[i+1] += QL
-                        self.QX[i+1] += QX
-                        self.qc_ad[i+1] = qc_ad
-                        self.F_th[i+1] = F_th
-                        self.F_X[i+1] = F_X
-                        self.Bc[i+1] = Bc
-                        self.Bs[i+1] = Bs
-                        self.M[i+1] = M
-                        self.M_ratio[i+1] = M_ratio
-                        self.P_IC[i+1] = P_IC
-
-            else: 
                 
                     '''Initial inner core --> update_ic routine'''  
-                    T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], self.Delta_time[i+1],self.planet.qcmb[i],self.P_IC[i],self.planet.S,ratio=1)
-                    self.T[i+1] = T
-                    self.r_IC[i+1] = r_IC
-                    self.drIC_dt[i+1] = drIC_dt
-                    self.PC[i+1] = PC
-                    self.PL[i+1] = PL
-                    self.PX[i+1] = PX
-                    self.Q_CMB[i+1] = Q_CMB
-                    self.T_CMB[i+1] = T_CMB   
-                    self.QC[i+1] = QC
-                    self.QL[i+1] = QL
-                    self.QX[i+1] = QX
-                    self.qc_ad[i+1] = qc_ad
-                    self.F_th[i+1] = F_th
-                    self.F_X[i+1] = F_X
-                    self.Bc[i+1] = Bc
-                    self.Bs[i+1] = Bs
-                    self.M[i+1] = M
-                    self.M_ratio[i+1] = M_ratio
-                    self.P_IC[i+1] = P_IC
-                
+                    T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],self.planet.S,ratio=ratio_0)
+                    T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
 
+#                    self.T[i+1] = T
+#                    self.r_IC[i+1] = r_IC
+#                    self.drIC_dt[i+1] = drIC_dt
+#                    self.PC[i+1] = PC
+#                    self.PL[i+1] = PL
+#                    self.PX[i+1] = PX
+#                    self.Q_CMB[i+1] = Q_CMB
+#                    self.T_CMB[i+1] = T_CMB   
+#                    self.QC[i+1] = QC
+#                    self.QL[i+1] = QL
+#                    self.QX[i+1] = QX
+#                    self.qc_ad[i+1] = qc_ad
+#                    self.F_th[i+1] = F_th
+#                    self.F_X[i+1] = F_X
+#                    self.Bc[i+1] = Bc
+#                    self.Bs[i+1] = Bs
+#                    self.M[i+1] = M
+#                    self.M_ratio[i+1] = M_ratio
+#                    self.P_IC[i+1] = P_IC
+                    
 # ------------------------------------------------------------------------------------------------------------------- #
          
         self.t_mf = 0 # 5 billion years
@@ -267,8 +248,7 @@ class Evolution():
                 self.t_mf = 5
         #print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))     
 
-# ------------
-#    def plot(self,plots_folder): 
+# ------------------------------------------------------------------------------------------------------------------- #
         if plot==True:
             
             '''Figures'''
@@ -490,6 +470,30 @@ class Evolution():
         M_ratio = M/magn_moment_Earth
                                                 
         return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
+    
+    def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i):
+        self.T[i+1] = T
+        self.r_IC[i+1] = r_IC
+        self.drIC_dt[i+1] = drIC_dt
+        self.PC[i+1] = PC
+        self.PL[i+1] = PL
+        self.PX[i+1] = PX
+        self.Q_CMB[i+1] = Q_CMB
+        self.T_CMB[i+1] = T_CMB   
+        self.QC[i+1] = QC
+        self.QL[i+1] = QL
+        self.QX[i+1] = QX
+        self.qc_ad[i+1] = qc_ad
+        self.F_th[i+1] = F_th
+        self.F_X[i+1] = F_X
+        self.Bc[i+1] = Bc
+        self.Bs[i+1] = Bs
+        self.M[i+1] = M
+        self.M_ratio[i+1] = M_ratio
+        self.P_IC[i+1] = P_IC
+        
+        return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1]
+
 
 # ------------------------------------------------------------------------------------------------------------------- #
     
@@ -521,7 +525,7 @@ class Evolution():
         
         derivative = sp.diff(function,r).subs(r,r0).evalf()
                 
-        return derivative
+        return derivative                
     
     def M_OC(self,r):
         '''Equation M_OC(t) in our paper'''
