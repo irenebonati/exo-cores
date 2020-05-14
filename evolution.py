@@ -618,24 +618,17 @@ class Evolution():
         X_CMF = (XFe*1e-2 - FeM*1e-2)/(1-FeM*1e-2)
         return GC*X_CMF*Mp*M_Earth/(self.planet.r_OC)**2
 
+
+class Evolution_Bouchet2013(Evolution):
     
+    def T_liquidus_core(self,P, S):
+        return 0.
+
+
+    
+
+
 class Rocky_Planet():
-
-    def __init__(self):
-        self.parameters()
-
-    def read_parameters(self, file): 
-        """Read parameters from yaml file"""
-        with open(file, 'r') as stream:
-            try:
-                dict_param = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-        for k, v in dict_param.items():
-            setattr(self, k, float(v))
-
-
-class Exo(Rocky_Planet):
     
     def __init__(self,Mp,XFe,FeM,S):
         self.Mp = Mp
@@ -654,3 +647,12 @@ class Exo(Rocky_Planet):
         self.time_vector = qcmb_ev["time"] *1e6
         self.qcmb = qcmb_ev["qcmb"]
     
+    def read_parameters(self, file): 
+        """Read parameters from yaml file"""
+        with open(file, 'r') as stream:
+            try:
+                dict_param = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+        for k, v in dict_param.items():
+            setattr(self, k, float(v))
