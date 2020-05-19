@@ -15,24 +15,11 @@ def name_file(XFe, Mp, FeM):
     return "data_prof_M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.res".format(Mp, XFe, FeM)
 
 def read_data_profiles(filename, core=False):
-    names = ["g(m/s^2)", "p(GPa)", "rho(kg/m^3)","r(m)", "T(K)", "oups", "Cp(J/kgK)", "alpha(10^-5 1/s)", "Gruneisen(1)", \
-             "KT(GPa)", "KS(GPa)", "G(GPa)", "ElCond (Siemens)", "Material-Parameter" ]
-    data = pd.read_csv(filename, skipinitialspace=True, sep=" ",
-                       names=names, index_col=False)
+    print(filename)
+    names = ["g(m/s^2)", "p(GPa)", "rho(kg/m^3)","r(m)", "T(K)", "oups", "Cp(J/kgK)", "alpha(10^-5 1/s)", "Gruneisen(1)","KT(GPa)", "KS(GPa)", "G(GPa)", "ElCond (Siemens)", "Material-Parameter" ]
+    data = pd.read_csv(filename, skipinitialspace=True, sep=" ", names=names, index_col=False)
     if core == True:
         data = data[data["Material-Parameter"]==8.]
-    return data
-
-def read_qs(mass, CFe, FeM, fig=False):
-    names = ["t(yr)", "qc(W/m2)", "TCMB(K)"]
-    filename = "qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*mass),int(CFe), int(FeM))
-    data = pd.read_csv(filename, skipinitialspace=True, sep=" ", names=names, skiprows=[0])
-    if fig: 
-        fig, ax =plt.subplots(1, 2)
-        ax[0].plot(data["t(yr)"], data["qc(W/m²)"])
-        ax[1].plot(data["t(yr)"], data["TCMB(K)"])
-        ax[0].set_ylabel("qc(W/m²)")
-        ax[1].set_ylabel("TCMB(K)")
     return data
 
 
@@ -117,24 +104,13 @@ def pressure_diff(r, *args):  #in GPa
     parenthesis = r**2/L_rho**2-4./5.*r**4/L_rho**4
     return -K0*parenthesis
 
-# def find_rIC(core, S=0):
-#     Temperature = core["T(K)"].values
-#     Pressure = core["p(GPa)"].values
-#     Radius = core["r(m)"].values
-#     T_liq = T_liquidus_core(Pressure, S)
-#     index = np.argmin(np.abs(Temperature-T_liq))
-#     r_IC = Radius[index]
-#     if r_IC == Radius[-1]:
-#         r_IC = np.array(0.)
-#     return r_IC
-
 def find_r_IC_adiabat(rho_0, Lrho, Arho, P0, T0, gamma, S=0):
     def Delta_T(radius):
         P = pressure_diff(radius, rho_0, Lrho, Arho)+P0
         Ta = T_adiabat(radius, Lrho, Arho, T0, gamma)
         TL = T_liquidus_core(P, S)
         return (Ta - TL)**2
-    res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') #, constraints={'type':'ineq', 'fun': lambda x: x})  #result has to be >0
+    res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') 
     r_IC = res.x
     if r_IC < 1: r_IC = np.array(0.)
     return r_IC.tolist()
@@ -187,17 +163,19 @@ def calculate_parameters(filename):
     param["r_IC_005"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"], S=0.05)
     param["r_IC_011"] = find_r_IC_adiabat(param["rho_0"], param["L_rho"], param["A_rho"], P0, param["T0"], param["gamma"], S=0.11)
     param["r_OC"] = core["r(m)"].iloc[0].tolist()
-    param["TL0"] = T_liquidus_core(P0, 0).tolist()
+    param["TL0_0"] = T_liquidus_core(P0, S=0).tolist()
+    param["TL0_005"] = T_liquidus_core(P0, S=0.05).tolist()
+    param["TL0_011"] = T_liquidus_core(P0, S=0.11).tolist()
     param["K_c"] = 1403.e9 # Earth's bulk modulus at the center (Labrosse+2015)
     return param, core
 
 def write_parameter_file(filename, fig=False, folder=""):
     """ Write the yaml file including all the parameters """
     param, core = calculate_parameters(filename)
-    output_filename = filename[:-4]+".yaml"
-    #print(output_filename)
-    #print(param)
-    # folder+filename # "M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
+    newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in filename[:-4])
+    Mp, XFe, FeM = [float(i) for i in newstr.split()]
+    #output_filename = filename[:-4]+".yaml"
+    output_filename = folder+"M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
     # create the yaml parameter file
     with open(output_filename, 'w') as outfile:
         yaml.dump(param, outfile, default_flow_style=False)
@@ -205,6 +183,7 @@ def write_parameter_file(filename, fig=False, folder=""):
     if fig:
         #rho = core["rho(kg/m^3)"]
         radius = core["r(m)"]
+        P0 = core["p(GPa)"].iloc[-1]
         fig, ax3 = plt.subplots(2,2)
         figure(core, ax3)
         ax3[1,0].plot(radius[::100]/1e3, density_Labrosse2015(radius[::100], param["rho_0"], param["L_rho"], param["A_rho"]), '+')
@@ -218,11 +197,10 @@ def write_parameter_file(filename, fig=False, folder=""):
 
 
 def explore_all_create_yaml(folder, fig=False):
-    files = [f for f in glob.glob(folder + "*.res")]
+    files = [f for f in glob.glob(folder + "data_prof*.res")]
     all_files = "all_files_list.txt"
     for file in files: 
-        # print(file)
-        if file[-12:] != "/data_IS.res": # we need to remove the file data_IS.res which includes every runs
+        if file.split('/')[-1] != "data_IS.res":
             param = write_parameter_file(file, folder=folder)
             Mp, XFe, FeM, rho, L, A = param["Mp"], param["XFe"], param["FeM"], param["rho_0"], param["L_rho"], param["A_rho"]
             with open(all_files, 'a+') as the_file:
@@ -249,11 +227,8 @@ def explore_all_create_yaml(folder, fig=False):
 
     
 if __name__ == "__main__":
-    #filename = name_file(35, 1.0, 10)
-    #print(filename)
-    #write_parameter_file("With_DTcmb/"+ filename, fig=True)
-    #filename = name_file(30, 1.0, 10)
-    #write_parameter_file(filename, fig=True)  
-    #read_qs(1.0, 35, 10, fig=True)
-    explore_all_create_yaml("With_DTcmb/", fig=False)
+#    filename = name_file(25, 0.8, 10)
+#    write_parameter_file("Ini_With_DTcmb/"+ filename, fig=True)
+    explore_all_create_yaml("Ini_With_DTcmb/", fig=False)
     plt.show()
+    
