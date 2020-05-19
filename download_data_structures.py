@@ -1,5 +1,4 @@
 import os
-import wget # to be able to download the data files
 from zipfile import ZipFile  #for opening the zip file and download the data
 import requests, shutil
 
@@ -9,8 +8,6 @@ all_files = {'Ini_No_DTcmb.zip',
        "Ini_With_DTcmb.zip"}
 
 url = "http://geodyn-chic.de/wp-content/uploads/2020/04/"
-
-
 
 
 # downloading the zip files

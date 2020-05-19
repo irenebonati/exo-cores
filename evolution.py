@@ -8,7 +8,6 @@ Created on Tue May 12 16:51:24 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 import yaml
 import pandas as pd
 import sympy as sp
@@ -62,6 +61,13 @@ class Evolution():
         self.Delta_time = self.planet.time_vector.diff()*year
         
 # ------------------------------------------------------------------------------------------------------------------- #
+            
+        '''Find initial inner core size'''
+        self.planet.TL0 = self.T_liquidus_core(self.planet.P0, self.planet.S)
+        print (self.planet.TL0,self.planet.P0,self.planet.S)
+        self.planet.r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
+        print (self.planet.r_IC_0)
+
                 
         if self.planet.r_IC_0 == 0.0:
             '''If no initial inner core, P and T are same as in yaml parameter file'''
@@ -83,7 +89,6 @@ class Evolution():
         self.T_CMB[0] = self.T_adiabat(self.planet.r_OC,self.T[0])
 
 # ------------------------------------------------------------------------------------------------------------------- #
-
         
     '''Run evolution model'''         
     def run(self,plots_folder,plot=True):
@@ -101,7 +106,7 @@ class Evolution():
                 if self.T[i+1] < self.planet.TL0:
                     
                     # IC radius and ICB pressure at new time step with T>Tmelt
-                    r_IC_form = self.find_r_IC(T)
+                    r_IC_form = self.find_r_IC(T,self.planet.S)
                     P_IC_form = self.pressure_diff(r_IC_form)+self.planet.P0
                     
                     Tmelt = self.planet.TL0
@@ -178,7 +183,7 @@ class Evolution():
             ax1.set_ylabel('Temperature at the center/ICB (K)',color='rebeccapurple')
             plt.gca().set_xlim(left=self.planet.time_vector[1]) 
             ax1.tick_params(axis='y', labelcolor='rebeccapurple')
-            ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+            ax2 = ax1.twinx()  
             ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
             ax2.set_xlabel('Time (years)')
             ax2.set_ylabel('Inner core radius (km)',color='tomato')
@@ -413,8 +418,6 @@ class Evolution():
         self.P_IC[i+1] = P_IC
         
         return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1]
-
-
 # ------------------------------------------------------------------------------------------------------------------- #
     
     '''Functions for calculations'''    
@@ -474,7 +477,7 @@ class Evolution():
     def T_liquidus_core(self,P, S):
         '''Melting temperature (Stixrude 2014)'''
         """ T_{\rm melt} = 6500 * (p/340)^{0.515} / (1 - ln(1-X_{\rm S}) ) """
-        return 6500*(P/340)**(0.515) * (1./(1-np.log(1-S * 1e-2)))
+        return 6500*(P/340)**(0.515) * (1./(1-np.log(1-S)))
         #return 6500.*(P/340)**0.515/(1-np.log(1-S))
      
     def _PL(self, r,P,S):
@@ -508,14 +511,25 @@ class Evolution():
         '''Adiabatic temperature''' 
         return T*(1-r**2/self.planet.L_rho**2-self.planet.A_rho*r**4/self.planet.L_rho**4)**self.planet.gamma
     
-    '''Find inner core radius when it first starts forming'''
-    def find_r_IC(self, T0):       
+#    '''Find inner core radius when it first starts forming'''
+#    def find_r_IC(self, T0):       
+#        def Delta_T(radius):
+#            P = self.pressure_diff((radius))+self.planet.P0
+#            Ta = self.T_adiabat(radius,T0)
+#            TL = self.T_liquidus_core(P, self.planet.S)
+#            return (Ta - TL)**2
+#        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') 
+#        r_IC = res.x
+#        if r_IC < 1: r_IC = np.array(0.)
+#        return r_IC.tolist()
+    
+    def find_r_IC(self,T0,S):
         def Delta_T(radius):
-            P = self.pressure_diff((radius))+self.planet.P0
+            P = self.pressure_diff(radius)+self.planet.P0
             Ta = self.T_adiabat(radius,T0)
-            TL = self.T_liquidus_core(P, self.planet.S)
+            TL = self.T_liquidus_core(P, S)
             return (Ta - TL)**2
-        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') #, constraints={'type':'ineq', 'fun': lambda x: x})  #result has to be >0
+        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') 
         r_IC = res.x
         if r_IC < 1: r_IC = np.array(0.)
         return r_IC.tolist()
@@ -618,16 +632,14 @@ class Evolution():
         X_CMF = (XFe*1e-2 - FeM*1e-2)/(1-FeM*1e-2)
         return GC*X_CMF*Mp*M_Earth/(self.planet.r_OC)**2
 
+#
+#class Evolution_Bouchet2013(Evolution):
+#    
+#    def T_liquidus_core(self,P, S):
+#        return 0.
+#
 
-class Evolution_Bouchet2013(Evolution):
     
-    def T_liquidus_core(self,P, S):
-        return 0.
-
-
-    
-
-
 class Rocky_Planet():
     
     def __init__(self,Mp,XFe,FeM,S):
@@ -639,10 +651,9 @@ class Rocky_Planet():
     
     def parameters(self,Mp,XFe,FeM):
         '''Load parameter files'''
-        self.read_parameters("./With_DTcmb/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
+        self.read_parameters("./Ini_With_DTcmb/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml".format(Mp, XFe, FeM))
         qcmb_ev = pd.read_csv("./Q_CMB/res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(100*FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
-        #qcmb_ev = pd.read_csv("qc_T_M{:02d}_Fe{:02d}_FeM{:02d}.txt".format(int(10*Mp),int(XFe), int(100*FeM)), sep=" ", skiprows=1, header=None)
         qcmb_ev.columns = ["time", "H_rad", "T_um","T_cmb","q_surf","qcmb"]
         self.time_vector = qcmb_ev["time"] *1e6
         self.qcmb = qcmb_ev["qcmb"]
