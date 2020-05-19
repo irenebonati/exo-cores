@@ -64,11 +64,10 @@ class Evolution():
             
         '''Find initial inner core size'''
         self.planet.TL0 = self.T_liquidus_core(self.planet.P0, self.planet.S)
-        print (self.planet.TL0,self.planet.P0,self.planet.S)
+        #print (self.planet.TL0,self.planet.P0,self.planet.S)
         self.planet.r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
-        print (self.planet.r_IC_0)
-
-                
+        #print (self.planet.r_IC_0)
+                        
         if self.planet.r_IC_0 == 0.0:
             '''If no initial inner core, P and T are same as in yaml parameter file'''
             self.T[0] = self.planet.T0 
@@ -106,7 +105,7 @@ class Evolution():
                 if self.T[i+1] < self.planet.TL0:
                     
                     # IC radius and ICB pressure at new time step with T>Tmelt
-                    r_IC_form = self.find_r_IC(T,self.planet.S)
+                    r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
                     P_IC_form = self.pressure_diff(r_IC_form)+self.planet.P0
                     
                     Tmelt = self.planet.TL0
@@ -115,6 +114,7 @@ class Evolution():
                     Delta_t_IC = ratio * self.Delta_time[i+1] # Time step until Tmelt is reached
            
                     dt_rem = self.Delta_time[i+1]-Delta_t_IC  # Remaining time step
+                    
                     assert ratio < 1
                     assert ratio > 0
                     
@@ -125,7 +125,7 @@ class Evolution():
                     
                     '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
                     r_IC_0 = 1e3
-                    P_IC_0 = self.pressure_diff(r_IC_form)+self.planet.P0             
+                    P_IC_0 = self.pressure_diff(r_IC_0)+self.planet.P0             
                     
                     '''Slowly start growing an inner core'''
                     timesteps = 50
@@ -136,7 +136,7 @@ class Evolution():
                         dt_rem-=dt
 
                         '''With inner core --> update_ic routine and use dt'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,self.planet.S,ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,ratio=ratio_0)
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
@@ -154,7 +154,7 @@ class Evolution():
                         dt_rem-=dt
                 
                     '''Initial inner core --> update_ic routine'''  
-                    T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],self.planet.S,ratio=ratio_0)
+                    T, r_IC, drIC_dt, PC, PL, PX, Q_CMB,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
                     T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
                     
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -301,7 +301,7 @@ class Evolution():
         qc_ad = self._qc_ad(k_c,T_CMB,r_IC)
 
         '''Gravity at CMB'''
-        g_c = self._gravity_CMB(self.planet.XFe,self.planet.FeM,self.planet.Mp)
+        g_c = self.planet.gc  #self._gravity_CMB(self.planet.XFe,self.planet.FeM,self.planet.Mp)
         
         '''Thermal buoyancy'''
         F_th = self._F_th(g_c,qcmb,qc_ad)
@@ -309,7 +309,7 @@ class Evolution():
         '''Compositional buoyancy'''
         F_X = 0 
         
-        R_planet = self._R_planet(self.planet.XFe,self.planet.Mp)
+        R_planet = self.planet.r_planet
         rho_OC = self._density(self.planet.r_OC)
         
         '''rms dipole field @ CMB'''
@@ -326,13 +326,13 @@ class Evolution():
         return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
     
     '''Routine for initial inner core'''    
-    def update_ic(self, r_IC, Delta_time,qcmb,P_IC,S,ratio=1):
+    def update_ic(self, r_IC, Delta_time,qcmb,P_IC,ratio=1):
         
         '''Secular cooling power'''
-        PC = self._PC(r_IC,P_IC,S)
+        PC = self._PC(r_IC,P_IC,self.planet.S)
         
         '''Latent heat power'''
-        PL = self._PL(r_IC,P_IC,S)
+        PL = self._PL(r_IC,P_IC,self.planet.S)
         
         '''Gravitational heat power'''
         PX = self._PX(r_IC)
@@ -363,7 +363,7 @@ class Evolution():
         
         '''Temperature at the ICB'''        
         #T = self.T_melt(r_IC)
-        T = self.T_liquidus_core(P_IC, S)
+        T = self.T_liquidus_core(P_IC, self.planet.S)
             
         '''CMB temperature'''
         T_CMB = self.T_adiabat(self.planet.r_OC,T)
@@ -372,7 +372,7 @@ class Evolution():
         qc_ad = self._qc_ad(k_c,T_CMB,r_IC)
         
         '''Gravity at CMB'''
-        g_c = self._gravity_CMB(self.planet.XFe,self.planet.FeM,self.planet.Mp)
+        g_c = self.planet.gc #self._gravity_CMB(self.planet.XFe,self.planet.FeM,self.planet.Mp)
                 
         '''Thermal buoyancy'''
         F_th = self._F_th(g_c,qcmb,qc_ad)
@@ -380,7 +380,7 @@ class Evolution():
         '''Compositional buoyancy'''
         F_X = self._F_X(g_c,r_IC,drIC_dt)
                 
-        R_planet = self._R_planet(self.planet.XFe,self.planet.Mp)
+        R_planet = self.planet.r_planet
         rho_OC = self._density(self.planet.r_OC)
                 
         '''rms dipole field @ CMB'''
@@ -478,7 +478,6 @@ class Evolution():
         '''Melting temperature (Stixrude 2014)'''
         """ T_{\rm melt} = 6500 * (p/340)^{0.515} / (1 - ln(1-X_{\rm S}) ) """
         return 6500*(P/340)**(0.515) * (1./(1-np.log(1-S)))
-        #return 6500.*(P/340)**0.515/(1-np.log(1-S))
      
     def _PL(self, r,P,S):
         '''Latent heat power'''
@@ -502,6 +501,7 @@ class Evolution():
 
     def pressure_diff(self,r):  
         '''Pressure difference (GPa)'''
+        GC = 6.67430e-11
         K0 = self.planet.L_rho**2/3.*2.*np.pi*GC*self.planet.rho_0**2 /1e9 #in GPa
         K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
         factor = (r**2)/(self.planet.L_rho**2)-(4.*r**4)/(5.*self.planet.L_rho**4)
@@ -511,22 +511,11 @@ class Evolution():
         '''Adiabatic temperature''' 
         return T*(1-r**2/self.planet.L_rho**2-self.planet.A_rho*r**4/self.planet.L_rho**4)**self.planet.gamma
     
-#    '''Find inner core radius when it first starts forming'''
-#    def find_r_IC(self, T0):       
-#        def Delta_T(radius):
-#            P = self.pressure_diff((radius))+self.planet.P0
-#            Ta = self.T_adiabat(radius,T0)
-#            TL = self.T_liquidus_core(P, self.planet.S)
-#            return (Ta - TL)**2
-#        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') 
-#        r_IC = res.x
-#        if r_IC < 1: r_IC = np.array(0.)
-#        return r_IC.tolist()
-    
-    def find_r_IC(self,T0,S):
-        def Delta_T(radius):
-            P = self.pressure_diff(radius)+self.planet.P0
-            Ta = self.T_adiabat(radius,T0)
+    '''Find inner core radius when it first starts forming'''
+    def find_r_IC(self,T, S):
+        def Delta_T(r):
+            P = self.pressure_diff(r)+self.planet.P0
+            Ta = self.T_adiabat(r,T)
             TL = self.T_liquidus_core(P, S)
             return (Ta - TL)**2
         res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') 
@@ -623,15 +612,14 @@ class Evolution():
         '''Planetary density'''
         return self.planet.rho_0 * (1-r**2/self.planet.L_rho**2 - self.planet.A_rho * r**4/self.planet.L_rho**4)
     
-    def _R_planet(self, XFe,Mp):
-        '''Planetary radius (Noack + Lasbleis paper), unit: m'''
-        return (7030 - 1840 * XFe*1e-2)*(Mp)**(0.282) * 1000
-    
-    def _gravity_CMB(self,XFe,FeM,Mp):
-        '''Gravity @ CMB (Noack & Lasbleis)'''
-        X_CMF = (XFe*1e-2 - FeM*1e-2)/(1-FeM*1e-2)
-        return GC*X_CMF*Mp*M_Earth/(self.planet.r_OC)**2
-
+#    def _R_planet(self, XFe,Mp):
+#        '''Planetary radius (Noack + Lasbleis paper), unit: m'''
+#        return (7030 - 1840 * XFe*1e-2)*(Mp)**(0.282) * 1000
+#    
+#    def _gravity_CMB(self,XFe,FeM,Mp):
+#        '''Gravity @ CMB (Noack & Lasbleis)'''
+#        X_CMF = (XFe*1e-2 - FeM*1e-2)/(1-FeM*1e-2)
+#        return GC*X_CMF*Mp*M_Earth/(self.planet.r_OC)**2
 #
 #class Evolution_Bouchet2013(Evolution):
 #    
@@ -653,7 +641,7 @@ class Rocky_Planet():
         '''Load parameter files'''
         self.read_parameters("./Ini_With_DTcmb/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml".format(Mp, XFe, FeM))
-        qcmb_ev = pd.read_csv("./Q_CMB/res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(100*FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
+        qcmb_ev = pd.read_csv("./Q_CMB/res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
         qcmb_ev.columns = ["time", "H_rad", "T_um","T_cmb","q_surf","qcmb"]
         self.time_vector = qcmb_ev["time"] *1e6
         self.qcmb = qcmb_ev["qcmb"]

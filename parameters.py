@@ -145,6 +145,7 @@ def calculate_parameters(filename):
     # extract the mass, XFe, FeM
     newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in filename[:-4])
     Mp, XFe, FeM = [float(i) for i in newstr.split()]
+    print (Mp,XFe,FeM)
     # initialize parameters with Earth
     param = Earth()
     #update parameters
@@ -152,6 +153,7 @@ def calculate_parameters(filename):
     param["Mp"], param["XFe"], param["FeM"] = Mp, XFe, FeM
     param["rho_0"], param["L_rho"], param["A_rho"] = find_Lrho_Arho(core) #rho_0 is the density at the center
     param["CP"] = average_volume(core, "Cp(J/kgK)").tolist()  #average Cp
+    param["gc"] = average_volume(core, "g(m/s^2)").tolist()  #average gc
     param["alpha_c"] = average_volume(core, "alpha(10^-5 1/s)").tolist() * 1e-5
     param["gamma"] = average_volume(core, "Gruneisen(1)").tolist()
     param["T0"] = core["T(K)"].iloc[-1].tolist() #at the center
