@@ -41,7 +41,6 @@ class Evolution():
         self.QL = np.zeros_like(self.planet.time_vector)
         self.QX = np.zeros_like(self.planet.time_vector)
         self.Q_CMB = np.zeros_like(self.planet.time_vector)
-        self.Q_CMB_final = np.zeros_like(self.planet.time_vector)
         self.T_CMB = np.zeros_like(self.planet.time_vector)
         self.SC = np.zeros_like(self.planet.time_vector)
         self.TC = np.zeros_like(self.planet.time_vector)
@@ -63,10 +62,16 @@ class Evolution():
 # ------------------------------------------------------------------------------------------------------------------- #
             
         '''Find initial inner core size'''
-        self.planet.TL0 = self.T_liquidus_core(self.planet.P0, self.planet.S)
-        #print (self.planet.TL0,self.planet.P0,self.planet.S)
-        self.planet.r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
-        #print (self.planet.r_IC_0)
+        TL0 = self.T_liquidus_core(self.planet.P0, self.planet.S)
+        r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
+        if self.planet.S == 0:
+            assert int(TL0) == int(self.planet.TL0_0),int(r_IC_0) == int(self.planet.r_IC_0)
+        elif self.planet.S == 0.05:
+            assert int(TL0) == int(self.planet.TL0_005),int(r_IC_0) == int(self.planet.r_IC_005)
+        elif self.planet.S == 0.11:
+            assert int(TL0) == int(self.planet.TL0_011),int(r_IC_0) == int(self.planet.r_IC_011)
+        self.planet.TL0 = TL0
+        self.planet.r_IC_0 = r_IC_0
                         
         if self.planet.r_IC_0 == 0.0:
             '''If no initial inner core, P and T are same as in yaml parameter file'''
@@ -103,13 +108,14 @@ class Evolution():
                  
                 '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
-                    
+                    print(self.T[i+1])
                     # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
                     P_IC_form = self.pressure_diff(r_IC_form)+self.planet.P0
                     
                     Tmelt = self.planet.TL0
                     ratio = (self.T[i]-Tmelt)/(self.T[i]-self.T[i+1])
+                    assert 0 < ratio < 1, ratio
 
                     Delta_t_IC = ratio * self.Delta_time[i+1] # Time step until Tmelt is reached
            
@@ -122,49 +128,61 @@ class Evolution():
                     T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],Delta_t_IC,self.planet.qcmb[i])
                     '''Shift updated value to the next time step'''
                     T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)                    
-                    
+                    print(T, self.T[i+1], self.planet.TL0,r_IC)
+
                     '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
-                    r_IC_0 = 1e2
+                    r_IC_0 = 1e3
                     P_IC_0 = self.pressure_diff(r_IC_0)+self.planet.P0             
                     
                     '''Slowly start growing an inner core'''
-                    timesteps = 100
+                    timesteps = 50
+                    tmp=0
                     for m in range(timesteps):
-                        
-                        dt = dt_rem/2**(timesteps-m)
-                        ratio_0 = ratio/2**(timesteps-m)
+                        dt = dt_rem/2**(timesteps-m-1)
+                        tmp += dt
+
+                        ratio_0 = dt/self.Delta_time[i+1]
                         dt_rem-=dt
 
                         '''With inner core --> update_ic routine and use dt'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, Q_CMB_final ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,ratio=ratio_0)
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
-                        self.Q_CMB[i+1] = Q_CMB_final
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-                                        
-                    assert r_IC < r_IC_form, (r_IC,r_IC_form)
-
+                    print(T, self.T[i+1])
+                    #assert tmp == self.Delta_time[i+1]-Delta_t_IC, (tmp, self.Delta_time[i+1]-Delta_t_IC)
+                    assert dt_rem == 0, self.Delta_time[i+1]
+                    #assert r_IC < r_IC_form, (r_IC,r_IC_form)
+                    assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB,self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)
+                    assert QC>0
+                    assert PC>0
             else: 
 
                     dt_rem = self.Delta_time[i+1]
                     timesteps = 5
                     for m in range(timesteps):
 
-                        dt = self.Delta_time[i+1]/2**(timesteps-m)
+                        dt = dt_rem/2**(timesteps-m-1)
                         ratio_0 = dt/self.Delta_time[i+1] 
                         dt_rem-=dt
                 
-                    '''Initial inner core --> update_ic routine'''  
-                    T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, Q_CMB_final, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
-                    T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-                    
+                        '''Initial inner core --> update_ic routine'''  
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
+                        T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
+
+                    assert dt_rem == 0, self.Delta_time[i+1]
+                    assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB,self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)                                
+                    assert QC>0
+                    assert PC>0,P_IC
 # ------------------------------------------------------------------------------------------------------------------- #
          
         self.t_mf = 0 # 5 billion years
         '''Magnetic field lifetime routine'''
         for i in range(1,len(self.planet.time_vector)-1):
             if i==1 and self.M[i] !=0 and self.M[i+1]!=0:
-                t_start=0
+                t_start = 0
+            if i!=1 and self.M[i] !=0 and self.M[i+1]!=0 and self.M[i-1]==0:
+                t_start=self.planet.time_vector[i]
             if self.M[i+1]==0 and self.M[i]!=0 and self.M[i-1]!=0:
                 t_end = self.planet.time_vector[i+1]
                 self.t_mf =(t_end-t_start)*1e-9
@@ -175,23 +193,23 @@ class Evolution():
         #print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))     
 
 # ------------------------------------------------------------------------------------------------------------------- #
-#        if plot==True:
     def plot(self,plots_folder):            
             '''Figures'''
-            fig, ax1 = plt.subplots()
+            plt.figure()
+            ax1 = plt.gca()
             ax1.plot(self.planet.time_vector,self.T, color='rebeccapurple')
-            ax1.set_xlabel('Time (years)')
             ax1.set_ylabel('Temperature at the center/ICB (K)',color='rebeccapurple')
-            plt.gca().set_xlim(left=self.planet.time_vector[1]) 
+            ax1.set_xlabel('Time(years)')
+            plt.gca().set_xlim([0,5e9]) 
             ax1.tick_params(axis='y', labelcolor='rebeccapurple')
             ax2 = ax1.twinx()  
             ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
-            ax2.set_xlabel('Time (years)')
             ax2.set_ylabel('Inner core radius (km)',color='tomato')
             ax2.tick_params(axis='y', labelcolor='tomato')
             plt.savefig(plots_folder + 'T+r_IC_{}ME_{}XFe_{}FeM_poster.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
-             
+            
+            plt.figure()
             plt.plot(self.planet.time_vector[1:],self.QC[1:], label='Secular cooling',color='lightseagreen')
             plt.plot(self.planet.time_vector[1:],self.QL[1:],label='Latent heat',color='sandybrown')
             plt.plot(self.planet.time_vector[1:],self.QX[1:], label='Gravitational heat',color='pink')
@@ -201,25 +219,24 @@ class Evolution():
             plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
             plt.gca().set_xlim(left=self.planet.time_vector[1])
             plt.legend()
+            plt.xlim([0,5e9])
             plt.savefig(plots_folder + 'Energy_balance_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
-             
-            plt.figure(num=None, figsize=(10, 4), dpi=80, facecolor='w', edgecolor='k')
-            plt.subplot(1, 2, 1)  
-            plt.plot(self.planet.time_vector,self.Q_CMB,color='royalblue')
-            plt.xlabel('Time (years)')
-            plt.ylabel('CMB heat flow (W)')
-            plt.gca().set_xlim(left=self.planet.time_vector[1])  
-            plt.subplot(1, 2, 2)         
-            plt.plot(self.planet.time_vector,self.T_CMB,color='royalblue')
-            plt.xlabel('Time (years)')
-            plt.ylabel('CMB temperature (K)')
+            
+            fig, ax = plt.subplots(1, 2, figsize=[10,4],sharex=True)
+            ax[0].plot(self.planet.time_vector,self.Q_CMB,color='royalblue')
+            ax[0].set_ylabel('CMB heat flow (W)')
+            ax[0].set_xlabel('Time (years)')
+            plt.xlim([0,5e9])  
+            ax[1].plot(self.planet.time_vector,self.T_CMB,color='royalblue')
+            ax[1].set_xlabel('Time (years)')
+            ax[1].set_ylabel('CMB temperature (K)')
             plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
-            plt.gca().set_xlim(left=self.planet.time_vector[1]) 
             plt.subplots_adjust(wspace=0.4)
             plt.savefig(plots_folder + 'QCMB_TCMB_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
-             
+            
+            plt.figure()
             plt.plot(self.planet.time_vector,self.F_th, label='Temperature',color='tomato')
             plt.plot(self.planet.time_vector,self.F_X, label='Composition',color='mediumseagreen')
             plt.xlabel('Time (years)')
@@ -227,28 +244,26 @@ class Evolution():
             plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
             plt.gca().set_xlim(left=self.planet.time_vector[1]) 
             plt.legend()
+            plt.xlim([0,5e9])
             plt.savefig(plots_folder + 'Fluxes_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
              
-            plt.figure(num=None, figsize=(10, 4), dpi=80, facecolor='w', edgecolor='k')
-            plt.subplot(1, 2, 1)  
-            plt.plot(self.planet.time_vector,self.Bc * 1e3,label='CMB',color='tomato')
-            plt.plot(self.planet.time_vector,self.Bs * 1e3,label='Surface',color='mediumseagreen')
-            plt.xlabel('Time (years)')
-            plt.ylabel('rms dipole field (mT)')
-            plt.semilogy()
-            plt.gca().set_xlim(left=self.planet.time_vector[1]) 
-            plt.legend()
-            ax1 = plt.subplot(1, 2, 2) 
-            ax1.plot(self.planet.time_vector,self.M,color='grey')
-            ax1.set_ylabel('Magnetic moment ($A m^{2}$)')
-            ax2 = ax1.twinx()  
+            fig, ax = plt.subplots(1, 2, figsize=[10,4],sharex=True)
+            ax[0].plot(self.planet.time_vector,self.Bc * 1e3,label='CMB',color='tomato')
+            ax[0].plot(self.planet.time_vector,self.Bs * 1e3,label='Surface',color='mediumseagreen')
+            ax[0].set_xlabel('Time (years)')
+            ax[0].set_ylabel('rms dipole field (mT)')
+            ax[0].semilogy()
+            plt.xlim([0,5e9]) 
+            ax[0].legend()
+            ax[1].plot(self.planet.time_vector,self.M,color='grey')
+            ax[1].set_ylabel('Magnetic moment ($A m^{2}$)')
+            ax2 = ax[1].twinx()  
             ax2.set_ylabel('Magnetic moment present Earth ($A m^{2}$)')  
             ax2.plot(self.planet.time_vector,self.M_ratio,color='grey')
             ax2.tick_params(axis='y')
-            plt.xlabel('Time (years)')
+            ax2.set_xlabel('Time (years)')
             plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
-            plt.gca().set_xlim(left=self.planet.time_vector[1]) 
             plt.subplots_adjust(wspace=0.4)
             plt.savefig(plots_folder + 'MField_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
@@ -282,7 +297,22 @@ class Evolution():
         drIC_dt = 0.
         
         ''' Inner core size'''
-        r_IC = 0.
+        r_IC = self.planet.r_IC_0
+        
+        assert r_IC ==0
+        
+        if r_IC > self.planet.r_OC:
+            r_IC = self.planet.r_OC
+            QC = Q_CMB
+            QL = 0.
+            QX = 0.
+        else:        
+            '''Secular cooling power'''
+            QC = PC*drIC_dt
+            '''Latent heat power'''
+            QL = PL*drIC_dt       
+            '''Gravitational heat power'''
+            QX = PX*drIC_dt 
         
         P_IC = self.planet.P0
                 
@@ -337,9 +367,7 @@ class Evolution():
         
         '''CMB heat flow'''
         Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
-        
-        Q_CMB_final = 4*np.pi*self.planet.r_OC**2*qcmb
-                
+                        
         '''Inner core growth rate'''
         drIC_dt = Q_CMB/(PC + PL + PX)
                         
@@ -391,7 +419,7 @@ class Evolution():
              
         M_ratio = M/magn_moment_Earth
                                                 
-        return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, Q_CMB_final , T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
+        return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
     
     def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i):
         self.T[i+1] = T
