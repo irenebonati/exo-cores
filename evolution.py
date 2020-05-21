@@ -112,7 +112,7 @@ class Evolution():
                     print('--')
                                      
                     Tl, Tn = self.test(self.T[i+1], self.Delta_time[i+1])
-                    assert Tl > Tn, (Tl, Tn)
+                    #assert Tl > Tn, (Tl, Tn)
                     print('--')
 
                     # IC radius and ICB pressure at new time step with T>Tmelt
@@ -172,7 +172,7 @@ class Evolution():
                     #assert tmp == self.Delta_time[i+1]-Delta_t_IC, (tmp, self.Delta_time[i+1]-Delta_t_IC)
                     #assert dt_rem == 0, self.Delta_time[i+1]
                     #assert r_IC < r_IC_form, (r_IC,r_IC_form)
-                    assert T > T_form, (T, T_form)
+                    #assert T > T_form, (T, T_form)
                     assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
                     #assert PC>0
                     #assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
@@ -395,7 +395,9 @@ class Evolution():
     def test(self, T, dt): 
         
         r_IC = self.find_r_IC(T,self.planet.S)
-        P_IC = self.pressure_diff(r_IC)+self.planet.P0         
+        print ("r_IC = ", r_IC)
+        P_IC = self.pressure_diff(r_IC)+self.planet.P0     
+        print ("P_IC = ",P_IC)
 
         print("Testing at ", T, " and ", r_IC)
         '''Secular cooling power'''
@@ -414,7 +416,7 @@ class Evolution():
         
         '''Temperature at the ICB'''        
         #T = self.T_melt(r_IC)
-        Tlatent = self.T_liquidus_core(r_IC,self.planet.S)
+        Tlatent = self.T_liquidus_core(P_IC,self.planet.S)
         
         fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
                 
@@ -525,14 +527,7 @@ class Evolution():
         return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1]
 # ------------------------------------------------------------------------------------------------------------------- #
     
-    '''Functions for calculations'''    
-#     def dTL_dr_IC(self, r,S):
-#         '''Labrosse'''
-#         S=0
-#         result = -self.planet.K_c * 2.*self.planet.dTL_dP * r / self.planet.L_rho**2. \
-#             + 3. * self.planet.dTL_dchi * self.planet.chi0 * r**2. / (self.planet.L_rho**3. * self.fC(self.planet.r_OC / self.planet.L_rho, 0.))
-#         return result
-    
+    '''Functions for calculations'''        
     def dTL_dr_IC(self,r0,S):
         
         ''' Melting temperature jump at ICB '''
@@ -573,11 +568,6 @@ class Evolution():
     def rho(self, r):
         ''' Density (Eq. 5 Labrosse 2015)'''
         return self.planet.rho_0 * (1. - r**2. / self.planet.L_rho**2. - self.planet.A_rho * r**4. / self.planet.L_rho**4.)
-
-    def T_melt(self, r):
-        ''' Melting temperature (Eq. 14 Labrosse 2015)'''
-        return self.planet.TL0 - self.planet.K_c * self.planet.dTL_dP * r**2. / self.planet.L_rho**2. + self.planet.dTL_dchi * self.planet.chi0 * r**3. \
-                / (self.planet.L_rho**3. * self.fC(self.planet.r_OC / self.planet.L_rho, 0.))
     
     def T_liquidus_core(self,P, S):
         '''Melting temperature (Stixrude 2014)'''
@@ -716,7 +706,7 @@ class Evolution():
         if S==0.:
             self.planet.Deltarho_ICB = 0.
         else:
-            self.planet.Deltarho_ICB = 500./0.1 * S
+            self.planet.Deltarho_ICB = 500./0.11 * S
         return self.planet.gc * r / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
     
     def _density(self,r):
@@ -728,6 +718,18 @@ class Evolution():
 #    def T_liquidus_core(self,P, S):
 #        return 0.
 #
+        
+class Evolution_Labrosse2015(Evolution):    
+    def T_liquidus_core(self,r):
+        ''' Melting temperature (Eq. 14 Labrosse 2015)'''
+        return self.planet.TL0 - self.planet.K_c * self.planet.dTL_dP * r**2. / self.planet.L_rho**2. + self.planet.dTL_dchi * self.planet.chi0 * r**3. \
+                / (self.planet.L_rho**3. * self.fC(self.planet.r_OC / self.planet.L_rho, 0.))
+                
+    def dTL_dr_IC(self, r):
+        result = -self.planet.K_c * 2.*self.planet.dTL_dP * r / self.planet.L_rho**2. \
+        + 3. * self.planet.dTL_dchi * self.planet.chi0 * r**2. / (self.planet.L_rho**3. * self.fC(self.planet.r_OC / self.planet.L_rho, 0.))
+        return result
+
     
 class Rocky_Planet():
     
