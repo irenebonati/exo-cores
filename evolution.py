@@ -109,11 +109,11 @@ class Evolution():
                
                 '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
-                    print('--')
+                    #print('--')
                                      
-                    Tl, Tn = self.test(self.T[i+1], self.Delta_time[i+1])
+                    #Tl, Tn = self.test(self.T[i+1], self.Delta_time[i+1])
                     #assert Tl > Tn, (Tl, Tn)
-                    print('--')
+                    #print('--')
 
                     # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
@@ -123,7 +123,7 @@ class Evolution():
                     
                     Tmelt = self.planet.TL0
                     ratio = (self.T[i]-Tmelt)/(self.T[i]-self.T[i+1])
-                    print ("ratio_NOIC = ",ratio)
+                    #print ("ratio_NOIC = ",ratio)
                     assert 0 < ratio < 1, ratio
 
                     Delta_t_IC = ratio * self.Delta_time[i+1] # Time step until Tmelt is reached
