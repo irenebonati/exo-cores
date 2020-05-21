@@ -105,75 +105,114 @@ class Evolution():
                 T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],self.Delta_time[i+1],self.planet.qcmb[i])
                 '''Shift updated value to the next time step'''
                 T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)               
-                 
+                assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
+               
                 '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
-                    print(self.T[i+1])
+                    print('--')
+                                     
+                    Tl, Tn = self.test(self.T[i+1], self.Delta_time[i+1])
+                    assert Tl > Tn, (Tl, Tn)
+                    print('--')
+
                     # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
                     P_IC_form = self.pressure_diff(r_IC_form)+self.planet.P0
+                    T_form = self.T[i+1]
+                    
                     
                     Tmelt = self.planet.TL0
                     ratio = (self.T[i]-Tmelt)/(self.T[i]-self.T[i+1])
+                    print ("ratio_NOIC = ",ratio)
                     assert 0 < ratio < 1, ratio
 
                     Delta_t_IC = ratio * self.Delta_time[i+1] # Time step until Tmelt is reached
            
                     dt_rem = self.Delta_time[i+1]-Delta_t_IC  # Remaining time step
                     
-                    assert ratio < 1
-                    assert ratio > 0
-                    
                     ''' Go "back" and calculate the heat budget until an inner core starts forming --> use Delta_t_IC'''
                     T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_noic(self.T[i],Delta_t_IC,self.planet.qcmb[i])
                     '''Shift updated value to the next time step'''
                     T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)                    
-                    print(T, self.T[i+1], self.planet.TL0,r_IC)
-
+                    
                     '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
                     r_IC_0 = 1e3
-                    P_IC_0 = self.pressure_diff(r_IC_0)+self.planet.P0             
-                    
-                    '''Slowly start growing an inner core'''
-                    timesteps = 50
-                    tmp=0
-                    for m in range(timesteps):
-                        dt = dt_rem/2**(timesteps-m-1)
-                        tmp += dt
+                    P_IC_0 = self.pressure_diff(r_IC_0)+self.planet.P0         
 
+                    '''Slowly start growing an inner core'''
+                    timesteps = 100
+                    tmp=0
+                    sum_ratio=0
+                    Q_CMB_0= 0
+                    for m in range(timesteps):
+                        dt = dt_rem/timesteps #self.Delta_time[i+1]/timesteps#dt_rem/2**(timesteps-m-1) 
+                        tmp += dt
+                            
                         ratio_0 = dt/self.Delta_time[i+1]
-                        dt_rem-=dt
+                        sum_ratio+=ratio_0
+                        #dt_rem-=dt
 
                         '''With inner core --> update_ic routine and use dt'''  
                         T, r_IC, drIC_dt, PC, PL, PX, Q_CMB ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,ratio=ratio_0)
+
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
+                        Q_CMB_0 += Q_CMB  
+                        
+                        if m ==timesteps-1:
+                            Q_CMB = (sum_ratio+ratio)*4*np.pi*self.planet.qcmb[i]*self.planet.r_OC**2
+                            drIC_dt = Q_CMB/(PC + PL + PX)
+                            QL = PL*drIC_dt
+                            QC = PC*drIC_dt
+                            QX = PX*drIC_dt
+
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-                    print(T, self.T[i+1])
+                    
+                    #print((1-ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi/1e13)
                     #assert tmp == self.Delta_time[i+1]-Delta_t_IC, (tmp, self.Delta_time[i+1]-Delta_t_IC)
-                    assert dt_rem == 0, self.Delta_time[i+1]
+                    #assert dt_rem == 0, self.Delta_time[i+1]
                     #assert r_IC < r_IC_form, (r_IC,r_IC_form)
-                    assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB,self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)
-                    assert QC>0
-                    assert PC>0
+                    assert T > T_form, (T, T_form)
+                    assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
+                    #assert PC>0
+                    #assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
             else: 
 
                     dt_rem = self.Delta_time[i+1]
-                    timesteps = 5
+                    if self.r_IC[i] < 1e5:
+                        timesteps = 100
+                    elif self.r_IC[i] < 2e5:
+                        timesteps = 20
+                    else:
+                        timesteps = 2
+                    sum_ratio = 0
+                    Q_CMB_0 = 0
+                    r_IC = self.r_IC[i]
                     for m in range(timesteps):
 
-                        dt = dt_rem/2**(timesteps-m-1)
-                        ratio_0 = dt/self.Delta_time[i+1] 
+                        dt = self.Delta_time[i+1]/timesteps#dt_rem/2**(timesteps-m-1) 
+                        ratio_0 = dt/self.Delta_time[i+1]
+                        sum_ratio+=ratio_0
                         dt_rem-=dt
-                
+                        
                         '''Initial inner core --> update_ic routine'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(self.r_IC[i], dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
+                        #if m % 100 == 0:
+                        #    print (m,r_IC,T, QC/1e13, QL/1e13, QX/1e13)
+                        Q_CMB_0 += Q_CMB
+#                        if m ==timesteps-1:
+#                            Q_CMB = (sum_ratio)*4*np.pi*self.planet.qcmb[i]*self.planet.r_OC**2
+#                            drIC_dt = Q_CMB/(PC + PL + PX)
+#                            QL = PL*drIC_dt
+#                            QC = PC*drIC_dt
+#                            QX = PX*drIC_dt
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i)
-
-                    assert dt_rem == 0, self.Delta_time[i+1]
-                    assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB,self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)                                
-                    assert QC>0
-                    assert PC>0,P_IC
+                    
+                    #assert dt_rem == 0, self.Delta_time[i+1]
+                    #assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
+                    #print (self.r_IC[i+1], self.T[i+1], timesteps*QC/1e13,timesteps*QL/1e13,timesteps*QX/1e13,self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi/1e13)
+                    #assert QC>0
+                    #assert PC>0
 # ------------------------------------------------------------------------------------------------------------------- #
          
         self.t_mf = 0 # 5 billion years
@@ -287,7 +326,7 @@ class Evolution():
         '''CMB heat flow'''
         Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
 
-        '''Temperature increase at center'''
+        '''Temperature change at center'''
         dT_dt = Q_CMB/PC 
         
         ''' New central temperature '''
@@ -353,6 +392,47 @@ class Evolution():
                 
         return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
     
+    def test(self, T, dt): 
+        
+        r_IC = self.find_r_IC(T,self.planet.S)
+        P_IC = self.pressure_diff(r_IC)+self.planet.P0         
+
+        print("Testing at ", T, " and ", r_IC)
+        '''Secular cooling power'''
+        PC = self._PC(r_IC,P_IC,self.planet.S)
+        
+        '''Latent heat power'''
+        PL = self._PL(r_IC,P_IC,self.planet.S)
+        
+        '''Gravitational heat power'''
+        PX = self._PX(r_IC)
+        
+        QC = 1e13
+        drIC_dt = QC/(PC + PL + PX)
+        r_IC += drIC_dt * dt
+        P_IC = self.pressure_diff(r_IC) + self.planet.P0
+        
+        '''Temperature at the ICB'''        
+        #T = self.T_melt(r_IC)
+        Tlatent = self.T_liquidus_core(r_IC,self.planet.S)
+        
+        fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
+                
+        ''' Secular cooling power '''
+        PC = (-4*np.pi/3*self.planet.rho_0*self.planet.CP*self.planet.L_rho**3*fC)                
+     
+        '''CMB heat flow'''
+        Q_CMB = 1e13 #4*np.pi*self.planet.r_OC**2*qcmb
+
+        '''Temperature change at center'''
+        dT_dt = Q_CMB/PC 
+        
+        ''' New central temperature '''
+        Tnolatent = T + dT_dt * dt 
+        
+        print ("Tlatent = ",Tlatent, "should be higher than Tnolatent = ",Tnolatent)
+        return (Tlatent , Tnolatent)
+        
     '''Routine for initial inner core'''    
     def update_ic(self, r_IC, Delta_time,qcmb,P_IC,ratio=1):
         
@@ -366,7 +446,7 @@ class Evolution():
         PX = self._PX(r_IC)
         
         '''CMB heat flow'''
-        Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
+        Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb  
                         
         '''Inner core growth rate'''
         drIC_dt = Q_CMB/(PC + PL + PX)
@@ -418,7 +498,7 @@ class Evolution():
         M = self._magn_moment(rho_OC,F_th,F_X,r_IC)
              
         M_ratio = M/magn_moment_Earth
-                                                
+                                                        
         return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC
     
     def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,i):
@@ -543,7 +623,9 @@ class Evolution():
             Ta = self.T_adiabat(r,T)
             TL = self.T_liquidus_core(P, S)
             return (Ta - TL)**2
-        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded') 
+        res = minimize_scalar(Delta_T, bounds=(0., 6e6), method='bounded')
+        if not res.success:
+            print("find_r_IC didn't converge")
         r_IC = res.x
         if r_IC < 1: r_IC = np.array(0.)
         return r_IC.tolist()
