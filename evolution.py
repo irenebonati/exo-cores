@@ -16,7 +16,7 @@ from scipy.optimize import minimize_scalar
 #plots_folder = "./Figures/"
 
 year              = 365.25*3600*24    # 1 year (s)
-GC                = 6.67e-11          # Gravitational constant (m3 kg-1 s-2)
+GC                = 6.67430e-11
 Ak                = 2.39              # Radial dependence of conductivity
 beta              = 0.2               # Saturation constant for fast rotating polar dynamos
 mu_0              = 4*np.pi*1e-7      # Magnetic permeability (Hm-1)
@@ -89,7 +89,6 @@ class Evolution():
         '''Initial inner core radius, CMB heat flux and temperature set to 0 for now'''
         '''I do this because the first value in the file of Lena is negative'''
         self.r_IC[0] = self.planet.r_IC_0
-        #self.Q_CMB[0] = 0
         self.T_CMB[0] = self.T_adiabat(self.planet.r_OC,self.T[0])
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -109,11 +108,10 @@ class Evolution():
                
                 '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
-                    #print('--')
                                      
-                    #Tl, Tn = self.test(self.T[i+1], self.Delta_time[i+1])
-                    #assert Tl > Tn, (Tl, Tn)
-                    #print('--')
+#                    Tl, Tn = self.test(self.T[i+1], self.Delta_time[i+1])
+#                    assert Tl > Tn, (Tl, Tn)
+#                    print('--')
 
                     # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
@@ -533,16 +531,12 @@ class Evolution():
         ''' Melting temperature jump at ICB '''
         '''Stixrude'''
         K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
-#         B = 6500./(1-np.log(1-S* 1e-2))
-#         der = (1.03 * self.planet.L_rho**2 * r - 1.648 * r**3) \
-#         /(self.planet.L_rho**4 * (r**2 / self.planet.L_rho**2 - (4 * r**4)/(5 * self.planet.L_rho**4))**(0.485))
-#         result = (-A/340.)**(0.515) * B * der
         
         r = sp.symbols('r')
         
         P = self.planet.P0 - K0 * (r**2/self.planet.L_rho**2 - (4*r**4)/(5*self.planet.L_rho**4))
         
-        S_t = S * self.M_OC(self.planet.r_IC) /(4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,0)-self.fC(r/self.planet.L_rho,0)))
+        S_t = S * self.M_OC(self.planet.r_IC_0) /(4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,0)-self.fC(r/self.planet.L_rho,0)))
         
         function = 6500 * (P/340)**(0.515) * 1./(1-sp.log(1-S_t))
         
@@ -583,8 +577,8 @@ class Evolution():
         '''Secular cooling power (Eq. A8 Labrosse 2015)'''
         return -4. * np.pi / 3. * self.planet.rho_0 * self.planet.CP * self.planet.L_rho**3. *\
                 (1 - r**2. / self.planet.L_rho**2 - self.planet.A_rho* r**4. / self.planet.L_rho**4.)**(-self.planet.gamma) \
-                * (self.dTL_dr_IC(r,S) + 2. * self.planet.gamma \
-                * self.T_liquidus_core(P, S) * r / self.planet.L_rho**2. *(1 + 2. * self.planet.A_rho * r**2. / self.planet.L_rho**2.) \
+                * (self.dTL_dr_IC(r,S) + (2. * self.planet.gamma \
+                * self.T_liquidus_core(P, S) * r / self.planet.L_rho**2.) *(1 + 2. * self.planet.A_rho * r**2. / self.planet.L_rho**2.) \
                 /(1 - r**2. / self.planet.L_rho**2. - self.planet.A_rho * r**4. / self.planet.L_rho**4.)) \
                 * (self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)-self.fC(r / self.planet.L_rho, self.planet.gamma))
 
@@ -596,7 +590,6 @@ class Evolution():
 
     def pressure_diff(self,r):  
         '''Pressure difference (GPa)'''
-        GC = 6.67430e-11
         K0 = self.planet.L_rho**2/3.*2.*np.pi*GC*self.planet.rho_0**2 /1e9 #in GPa
         K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
         factor = (r**2)/(self.planet.L_rho**2)-(4.*r**4)/(5.*self.planet.L_rho**4)
