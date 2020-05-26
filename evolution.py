@@ -10,8 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import pandas as pd
-import sympy as sp
-from sympy import lambdify
+#import sympy as sp
+#from sympy import lambdify
 from scipy.optimize import minimize_scalar
 
 year              = 365.25*3600*24    # 1 year (s)
@@ -61,36 +61,41 @@ class Evolution():
         
 # ------------------------------------------------------------------------------------------------------------------- #
             
-        '''Find initial inner core size'''
+        '''Find initial inner core size and melting temperature'''
         TL0 = self.T_liquidus_core(self.planet.P0, self.planet.S)
         r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
+        
+        '''Check if the radius and melting temperature I find correspond to the ones in the yaml file'''
         if self.planet.S == 0:
             assert int(TL0) == int(self.planet.TL0_0),int(r_IC_0) == int(self.planet.r_IC_0)
         elif self.planet.S == 0.05:
             assert int(TL0) == int(self.planet.TL0_005),int(r_IC_0) == int(self.planet.r_IC_005)
         elif self.planet.S == 0.11:
             assert int(TL0) == int(self.planet.TL0_011),int(r_IC_0) == int(self.planet.r_IC_011)
+        
+        '''Rename variables for later calculations in the code'''
         self.planet.TL0 = TL0
         self.planet.r_IC_0 = r_IC_0
                         
         if self.planet.r_IC_0 == 0.0:
-            '''If no initial inner core, P and T are same as in yaml parameter file'''
+            '''If no initial inner core, P0 and T0 are same as in yaml parameter file'''
             self.T[0] = self.planet.T0 
             self.P_IC[0] = self.planet.P0
+            self.S_t[0] = self.planet.S
 
         else:                  
             '''If initial inner core, define T by using the melting temperature by Stixrude'''
             '''Define P by calculating the pressure at the ICB radius'''
             self.P_IC[0] = self.pressure_diff(self.planet.r_IC_0)+self.planet.P0
-            P_IC = self.P_IC[0]
-            self.T[0] = self.T_liquidus_core(P_IC, self.planet.S)            
+            self.S_t[0] = self.planet.S * self.M_OC(0)/self.M_OC(self.planet.r_IC_0)
+            self.T[0] = self.T_liquidus_core(self.P_IC[0], self.S_t[0])            
             #self.T[0] = self.T_melt(self.planet.r_IC_0)
             
-        '''Initial inner core radius, CMB heat flux and temperature set to 0 for now'''
+        '''Initial inner core radius, CMB heat flux set to 0'''
         '''I do this because the first value in the file of Lena is negative'''
         self.r_IC[0] = self.planet.r_IC_0
         self.T_CMB[0] = self.T_adiabat(self.planet.r_OC,self.T[0])
-        self.S_t[0] = self.planet.S
+        #self.S_t[0] = self.planet.S
 
 # ------------------------------------------------------------------------------------------------------------------- #
         
@@ -331,8 +336,7 @@ class Evolution():
         drIC_dt = 0.
         
         ''' Inner core size'''
-        r_IC = self.planet.r_IC_0
-        
+        r_IC = self.planet.r_IC_0      
         assert r_IC ==0
         
         P_IC = self.planet.P0
@@ -380,7 +384,7 @@ class Evolution():
                 
         '''Secular cooling power'''
         PC = self._PC(r_IC,P_IC,self.planet.S)
-        
+                
         '''Latent heat power'''
         PL = self._PL(r_IC,P_IC,self.planet.S)
         
@@ -434,11 +438,15 @@ class Evolution():
         
         '''rms dipole field @ surface'''
         Bs = self._Bs (Bc,self.planet.r_planet)
-                
-        '''Magnetic moment (Am2)'''
-        M = self._magn_moment(rho_OC,F_th,F_X,r_IC)
+        
+        if r_IC > self.planet.r_OC or r_IC == self.planet.r_OC:
+            M = 0.
+            M_ratio = 0.
+        else:
+            '''Magnetic moment (Am2)'''
+            M = self._magn_moment(rho_OC,F_th,F_X,r_IC)
              
-        M_ratio = M/magn_moment_Earth
+            M_ratio = M/magn_moment_Earth
                                                         
         return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t
     
@@ -494,7 +502,6 @@ class Evolution():
 #                                        
 #        return derivative     
 
-
     def dTL_dr_IC(self,x,S):
         
         K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
@@ -502,25 +509,43 @@ class Evolution():
         P0 = self.planet.P0
         rho_0 = self.planet.rho_0
         r_OC =self.planet.r_OC
-        gamma = self.planet.gamma
-        M_OC_0 = self.M_OC(self.planet.r_IC_0)
+        #gamma = self.planet.gamma
+        M_OC_0 = self.M_OC(0)
         A_rho = self.planet.A_rho
         
-        der = -9.84558823529412*K0*(-K0*(x**2/L_rho**2 - 4*x**4/(5*L_rho**4))/340 + P0/340)**(-0.485)*(2*x/L_rho**2 - 16*x**3/(5*L_rho**4)) \
-            /(-np.log(1 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1)))) + 1.0) \
-            - 4875.0*M_OC_0*S*(-K0*(x**2/L_rho**2 - 4*x**4/(5*L_rho**4))/340 + P0/340)**0.515 \
-            *((x/L_rho)**3.0*(2.0*(x/L_rho)**2.0*(-0.6*gamma - 0.6)/x - 4.0*(x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714)/x) + 3.0*(x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1)/x) \
-            /(np.pi*L_rho**3*rho_0*(1 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1))))*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1))**2*(-np.log(1 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1)))) + 1.0)**2)
-        return der   
+#        der =-9.84558823529412*K0*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**(-0.485) \
+#            *(2*x/L_rho**2 - 3.2*x**3/L_rho**4)/(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) \
+#            - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) \
+#            - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0)))) + 1.0) - 4875.0*M_OC_0*S*(-0.00294117647058824*K0 \
+#            *(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**0.515*((x/L_rho)**3.0*(2.0*(x/L_rho)**2.0*(-0.6*gamma - 0.6)/x - 4.0*(x/L_rho)**4.0 \
+#            *(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714)/x) + 3.0*(x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma) \
+#            *(0.214285714285714*gamma + 0.214285714285714) + 1.0)/x)/(np.pi*L_rho**3*rho_0*(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) \
+#            - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma) \
+#            *(0.214285714285714*gamma + 0.214285714285714) + 1.0))))*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma \
+#            + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0))**2 \
+#            * (-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma \
+#            + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0)))) + 1.0)**2)   
+#        return der    
+
+        der = -9.84558823529412*K0*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**(-0.485) \
+           *(2*x/L_rho**2 - 3.2*x**3/L_rho**4)/(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429 \
+           *A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)))) + 1.0) \
+           - 4875.0*M_OC_0*S*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**0.515*((x/L_rho)**3.0*(-1.71428571428571*A_rho*(x/L_rho)**4.0 \
+           /x - 1.2*(x/L_rho)**2.0/x) + 3.0*(x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)/x)/(np.pi*L_rho**3*rho_0*(1.0 - 0.75 \
+           *M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429 \
+           *A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))))*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0 \
+           *(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))**2*(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429 \
+           *A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)))) + 1.0)**2)
+
+        return der
     
     def M_OC(self,r):
         '''Equation M_OC(t) in our paper'''
         if r==self.planet.r_OC:
-            result = 0
+            mass = 0
         else:
-            result = 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,self.planet.gamma)-self.fC(r/self.planet.L_rho,self.planet.gamma))
-        return result
-        
+            mass = 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,self.planet.gamma)-self.fC(r/self.planet.L_rho,self.planet.gamma))
+        return mass      
         
     def fC(self, r, delta): 
         '''fC (Eq. A1 Labrosse 2015)'''
@@ -538,14 +563,16 @@ class Evolution():
     
     def T_liquidus_core(self,P, S):
         '''Melting temperature (Stixrude 2014)'''
-        """ T_{\rm melt} = 6500 * (p/340)^{0.515} / (1 - ln(1-X_{\rm S}) ) """
-        return 6500*(P/340)**(0.515) * (1./(1.-np.log(1.-S)))
+        return 6500.*(P/340.)**(0.515) * (1./(1.-np.log(1.-S)))
     
     def _S_t(self,S,r):
         if r == self.planet.r_OC:
             result = 0.
         else:
-            result = S * self.M_OC(self.planet.r_IC_0) /self.M_OC(r)             
+            result = S * self.M_OC(0) /self.M_OC(r) 
+
+        if result > 1.:
+            result = 1.            
         return result
      
     def _PL(self, r,P,S):
