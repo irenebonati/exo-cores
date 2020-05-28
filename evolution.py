@@ -171,7 +171,7 @@ class Evolution():
                     #assert dt_rem == 0, self.Delta_time[i+1]
                     #assert r_IC < r_IC_form, (r_IC,r_IC_form)
                     #assert T > T_form, (T, T_form)
-                    print (T_form-T)
+                    #print (T_form-T)
                     assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
                     assert PC>0
                     #assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
