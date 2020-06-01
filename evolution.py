@@ -95,7 +95,6 @@ class Evolution():
         '''I do this because the first value in the file of Lena is negative'''
         self.r_IC[0] = self.planet.r_IC_0
         self.T_CMB[0] = self.T_adiabat(self.planet.r_OC,self.T[0])
-        #self.S_t[0] = self.planet.S
 
 # ------------------------------------------------------------------------------------------------------------------- #
         
@@ -171,19 +170,18 @@ class Evolution():
                     #assert dt_rem == 0, self.Delta_time[i+1]
                     #assert r_IC < r_IC_form, (r_IC,r_IC_form)
                     #assert T > T_form, (T, T_form)
-                    #print (T_form-T)
+                    print (T,T_form)
                     assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
-                    assert PC>0
-                    #assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
+                    assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
             else: 
 
                     dt_rem = self.Delta_time[i+1]
                     if self.r_IC[i] < 1e5:
-                        timesteps = 100
+                        timesteps = 200
                     elif self.r_IC[i] < 2e5:
-                        timesteps = 20
+                        timesteps = 50
                     else:
-                        timesteps = 2
+                        timesteps = 20
                     sum_ratio = 0
                     Q_CMB_0 = 0
                     r_IC = self.r_IC[i]
@@ -198,11 +196,8 @@ class Evolution():
                         T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
                         Q_CMB_0 += Q_CMB
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)
-                                            #assert dt_rem == 0, self.Delta_time[i+1]
-                    #assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
-                    #print (self.r_IC[i+1], self.T[i+1], timesteps*QC/1e13,timesteps*QL/1e13,timesteps*QX/1e13,self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi/1e13)
-                    #assert QC>0
-                    #assert PC>0
+                    #assert dt_rem == 0, self.Delta_time[i+1]
+                    assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
 # ------------------------------------------------------------------------------------------------------------------- #
          
         self.t_mf = 0 # 5 billion years
@@ -325,6 +320,7 @@ class Evolution():
         
         '''CMB heat flow'''
         Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
+        assert Q_CMB>0,Q_CMB
 
         '''Temperature change at center'''
         dT_dt = Q_CMB/PC 
@@ -421,7 +417,7 @@ class Evolution():
                     
         '''CMB temperature'''
         T_CMB = self.T_adiabat(self.planet.r_OC,T)
-        
+                
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,r_IC)
  
@@ -473,34 +469,7 @@ class Evolution():
         self.S_t[i+1] = S_t
         
         return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1],self.S_t[i+1]
-# ------------------------------------------------------------------------------------------------------------------- #
-    
-#    '''Functions for calculations'''        
-#    def dTL_dr_IC(self,r0,S):
-#        
-#        ''' Melting temperature jump at ICB '''
-#        '''Stixrude'''
-#        K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
-#        
-#        x = sp.symbols('x')
-#        
-#        P = self.planet.P0 - K0 * (x**2/self.planet.L_rho**2 - (4*x**4)/(5*self.planet.L_rho**4))
-#        
-#        S = self.planet.S * self.M_OC(self.planet.r_IC_0) /(4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,self.planet.gamma)-self.fC(x/self.planet.L_rho,self.planet.gamma)))
-#                
-#        if S.subs(x,r0).evalf()>1.:
-#            S =1.
-#        function = 6500 * (P/340)**(0.515) * 1./(1.-sp.log(1.-S))
-#        
-#        der1 = sp.diff(function,x)
-#        print (der1)
-#        
-#        derivative = sp.diff(function,x).subs(x,r0).evalf()   
-#        
-#        derivative = lambdify(x,derivative,'numpy')
-#        print (type(derivative))
-#                                        
-#        return derivative     
+# ------------------------------------------------------------------------------------------------------------------- #   
 
     def dTL_dr_IC(self,x,S):
         
@@ -509,23 +478,8 @@ class Evolution():
         P0 = self.planet.P0
         rho_0 = self.planet.rho_0
         r_OC =self.planet.r_OC
-        #gamma = self.planet.gamma
         M_OC_0 = self.M_OC(0)
-        A_rho = self.planet.A_rho
-        
-#        der =-9.84558823529412*K0*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**(-0.485) \
-#            *(2*x/L_rho**2 - 3.2*x**3/L_rho**4)/(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) \
-#            - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) \
-#            - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0)))) + 1.0) - 4875.0*M_OC_0*S*(-0.00294117647058824*K0 \
-#            *(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**0.515*((x/L_rho)**3.0*(2.0*(x/L_rho)**2.0*(-0.6*gamma - 0.6)/x - 4.0*(x/L_rho)**4.0 \
-#            *(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714)/x) + 3.0*(x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma) \
-#            *(0.214285714285714*gamma + 0.214285714285714) + 1.0)/x)/(np.pi*L_rho**3*rho_0*(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) \
-#            - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma) \
-#            *(0.214285714285714*gamma + 0.214285714285714) + 1.0))))*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma \
-#            + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0))**2 \
-#            * (-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-(r_OC/L_rho)**2.0*(0.6*gamma + 0.6) - (r_OC/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma \
-#            + 0.214285714285714) + 1.0) - (x/L_rho)**3.0*(-(x/L_rho)**2.0*(0.6*gamma + 0.6) - (x/L_rho)**4.0*(2*A_rho - gamma)*(0.214285714285714*gamma + 0.214285714285714) + 1.0)))) + 1.0)**2)   
-#        return der    
+        A_rho = self.planet.A_rho  
 
         der = -9.84558823529412*K0*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**(-0.485) \
            *(2*x/L_rho**2 - 3.2*x**3/L_rho**4)/(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429 \
