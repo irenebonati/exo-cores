@@ -29,6 +29,14 @@ class Evolution():
         self.planet = planet
         
         '''Initialize matrices'''
+        
+        # self.idx = {
+        #   'PC':4,
+        #   'PL':5,
+        # }
+        # self.PC <=> self.giant[:,self.idx['PC']]
+        # PC = self.giant...
+        
         self.r_IC = np.zeros_like(self.planet.time_vector)
         self.drIC_dt = np.zeros_like(self.planet.time_vector)
         self.T = np.zeros_like(self.planet.time_vector)
@@ -58,6 +66,8 @@ class Evolution():
         self.P_IC = np.zeros_like(self.planet.time_vector)
         self.S_t = np.zeros_like(self.planet.time_vector)
         self.Delta_time = self.planet.time_vector.diff()*year
+        self.t_IC0 = 0
+        self.T_IC0 = 0
         
 # ------------------------------------------------------------------------------------------------------------------- #
             
@@ -113,6 +123,10 @@ class Evolution():
                
                 '''If T is lower than Tmelt we start forming an inner core'''
                 if self.T[i+1] < self.planet.TL0:
+                    
+                    # At what time does an inner core start to form?
+                    self.t_IC0 = self.planet.time_vector[i]
+                    self.T_IC0 = self.T[i]
 
                     # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
@@ -220,6 +234,10 @@ class Evolution():
     def plot(self,plots_folder):            
             '''Figures'''
             plt.figure()
+#            for i in range(len(self.r_IC)-1):
+#                if self.r_IC[i+1] > 0 and self.r_IC[i] == 0:
+#                    t_IC = self.planet.time_vector[i]
+#                    T_IC = self.T[i]
             ax1 = plt.gca()
             ax1.plot(self.planet.time_vector,self.T, color='rebeccapurple')
             ax1.set_ylabel('Temperature at the center/ICB (K)',color='rebeccapurple')
@@ -230,6 +248,8 @@ class Evolution():
             ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
             ax2.set_ylabel('Inner core radius (km)',color='tomato')
             ax2.tick_params(axis='y', labelcolor='tomato')
+            ax2.scatter(self.t_IC0,0,s=40,c='k',marker='*')
+            ax1.scatter(self.t_IC0,self.T_IC0,s=40,c='k',marker='*')
             plt.savefig(plots_folder + 'T+r_IC_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
             
@@ -301,7 +321,7 @@ class Evolution():
             plt.subplots_adjust(wspace=0.4)
             plt.savefig(plots_folder + 'MField_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
-
+            
 # ------------------------------------------------------------------------------------------------------------------- #
 
     '''Routine for no initial inner core'''
@@ -320,7 +340,7 @@ class Evolution():
         
         '''CMB heat flow'''
         Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
-        assert Q_CMB>0,Q_CMB
+        assert Q_CMB > 0,Q_CMB
 
         '''Temperature change at center'''
         dT_dt = Q_CMB/PC 
@@ -333,7 +353,7 @@ class Evolution():
         
         ''' Inner core size'''
         r_IC = self.planet.r_IC_0      
-        assert r_IC ==0
+        assert r_IC == 0
         
         P_IC = self.planet.P0
                 
