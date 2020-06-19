@@ -165,7 +165,7 @@ class Evolution():
                         sum_ratio+=ratio_0
 
                         '''With inner core --> update_ic routine and use dt'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,self.planet.S,ratio=ratio_0)
 
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
@@ -201,13 +201,13 @@ class Evolution():
                     r_IC = self.r_IC[i]
                     for m in range(timesteps):
 
-                        dt = self.Delta_time[i+1]/timesteps#dt_rem/2**(timesteps-m-1) 
+                        dt = self.Delta_time[i+1]/timesteps
                         ratio_0 = dt/self.Delta_time[i+1]
                         sum_ratio+=ratio_0
                         dt_rem-=dt
                         
                         '''Initial inner core --> update_ic routine'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],self.S_t[i],ratio=ratio_0)
                         Q_CMB_0 += Q_CMB
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)
                     #assert dt_rem == 0, self.Delta_time[i+1]
@@ -248,8 +248,8 @@ class Evolution():
             ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
             ax2.set_ylabel('Inner core radius (km)',color='tomato')
             ax2.tick_params(axis='y', labelcolor='tomato')
-            ax2.scatter(self.t_IC0,0,s=40,c='k',marker='*')
-            ax1.scatter(self.t_IC0,self.T_IC0,s=40,c='k',marker='*')
+            #ax2.scatter(self.t_IC0,0,s=40,c='k',marker='*')
+            #ax1.scatter(self.t_IC0,self.T_IC0,s=40,c='k',marker='*')
             plt.savefig(plots_folder + 'T+r_IC_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
             
@@ -396,13 +396,12 @@ class Evolution():
         return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t
         
     '''Routine for initial inner core'''    
-    def update_ic(self, r_IC, Delta_time,qcmb,P_IC,ratio=1):
-                
+    def update_ic(self, r_IC, Delta_time,qcmb,P_IC,S_t,ratio=1):
         '''Secular cooling power'''
-        PC = self._PC(r_IC,P_IC,self.planet.S)
-                
+        PC = self._PC(r_IC,P_IC,S_t)
+        
         '''Latent heat power'''
-        PL = self._PL(r_IC,P_IC,self.planet.S)
+        PL = self._PL(r_IC,P_IC,S_t)
         
         '''Gravitational heat power'''
         PX = self._PX(r_IC)
@@ -445,7 +444,7 @@ class Evolution():
         F_th = self._F_th(qcmb,qc_ad)
         
         '''Compositional buoyancy'''
-        F_X = self._F_X(r_IC,drIC_dt,self.planet.S)
+        F_X = self._F_X(r_IC,drIC_dt,S_t)
                 
         rho_OC = self._density(self.planet.r_OC)
                 
@@ -541,7 +540,7 @@ class Evolution():
     
     def _S_t(self,S,r):
         if r == self.planet.r_OC:
-            result = 0.
+            result = 1.
         else:
             result = S * self.M_OC(0) /self.M_OC(r) 
 
