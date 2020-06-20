@@ -227,7 +227,9 @@ class Evolution():
                 break
             
         if self.M[1:].all()>0:
-                self.t_mf = 5
+                self.t_mf = 5.
+        if self.t_mf > 5.:
+            self.t_mf = 5.
         #print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))     
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -369,19 +371,19 @@ class Evolution():
         ''' Gravitational heat power '''
         QX = 0. 
         
+        rho_OC = self._density(self.planet.r_OC)
+        
         '''Isentropic heat flux'''
-        qc_ad = self._qc_ad(k_c,T_CMB)
+        qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        assert QC_ad<Q_CMB
+        #assert QC_ad<Q_CMB
         
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
         
         '''Compositional buoyancy'''
         F_X = 0 
-        
-        rho_OC = self._density(self.planet.r_OC)
-        
+                
         S_t = self.planet.S
         
         '''rms dipole field @ CMB'''
@@ -438,20 +440,20 @@ class Evolution():
                     
         '''CMB temperature'''
         T_CMB = self.T_adiabat(self.planet.r_OC,T)
+        
+        rho_OC = self._density(self.planet.r_OC)
                 
         '''Isentropic heat flux'''
-        qc_ad = self._qc_ad(k_c,T_CMB)
+        qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        assert QC_ad<Q_CMB
+#        assert QC_ad<Q_CMB
  
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
         
         '''Compositional buoyancy'''
         F_X = self._F_X(r_IC,drIC_dt,S_t)
-                
-        rho_OC = self._density(self.planet.r_OC)
-                
+                                
         '''rms dipole field @ CMB'''
         Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
         
@@ -625,9 +627,9 @@ class Evolution():
         '''Thermal buoyancy'''
         return self.planet.alpha_c * self.planet.gc / self.planet.rho_0 / self.planet.CP * (q_cmb - qc_ad)
     
-    def _qc_ad(self,k_c,T_cmb):
+    def _qc_ad(self,k_c,T_cmb,rho_OC):
         '''Isentropic heat flux at the CMB, unit: W m-2'''
-        return k_c * T_cmb * self.planet.r_OC / (self.planet.r_planet)**2
+        return k_c * T_cmb * self.planet.r_OC / (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*rho_OC*GC)))**2#(self.planet.r_planet)**2
     
     def _F_X(self,r,drIC_dt,S):
         '''Compositional buoyancy'''
