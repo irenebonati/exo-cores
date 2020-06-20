@@ -370,8 +370,10 @@ class Evolution():
         QX = 0. 
         
         '''Isentropic heat flux'''
-        qc_ad = self._qc_ad(k_c,T_CMB,r_IC)
-
+        qc_ad = self._qc_ad(k_c,T_CMB)
+        QC_ad = qc_ad *self.planet.r_OC**2*qcmb
+        assert QC_ad<Q_CMB
+        
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
         
@@ -438,7 +440,9 @@ class Evolution():
         T_CMB = self.T_adiabat(self.planet.r_OC,T)
                 
         '''Isentropic heat flux'''
-        qc_ad = self._qc_ad(k_c,T_CMB,r_IC)
+        qc_ad = self._qc_ad(k_c,T_CMB)
+        QC_ad = qc_ad *self.planet.r_OC**2*qcmb
+        assert QC_ad<Q_CMB
  
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
@@ -594,8 +598,8 @@ class Evolution():
         return r_IC.tolist()
     
     def _Bc(self,rho_OC,F_th,F_X,r_IC): 
-        if (F_th + F_X) < 0 or (self.planet.r_OC-r_IC) == 0:
-            Bc = 0
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0.:
+            Bc = 0.
         else:
             '''rms dipole field intensity at the CMB (Olson + Christensen 2006, unit:T)'''
             Bc = beta * np.sqrt(rho_OC * mu_0) * ((F_th+F_X)*self.planet.r_OC)**(1./3.)
@@ -607,7 +611,7 @@ class Evolution():
     
         '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
     def _magn_moment(self,rho_OC,F_th,F_X,r_IC):
-        if (F_th + F_X) < 0 or (self.planet.r_OC-r_IC) == 0:
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0:
             M = 0
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(rho_OC/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
@@ -621,9 +625,9 @@ class Evolution():
         '''Thermal buoyancy'''
         return self.planet.alpha_c * self.planet.gc / self.planet.rho_0 / self.planet.CP * (q_cmb - qc_ad)
     
-    def _qc_ad(self,k_c,T_cmb,r_IC):
+    def _qc_ad(self,k_c,T_cmb):
         '''Isentropic heat flux at the CMB, unit: W m-2'''
-        return k_c * T_cmb * self.planet.r_OC / (6340000)**2
+        return k_c * T_cmb * self.planet.r_OC / (self.planet.r_planet)**2
     
     def _F_X(self,r,drIC_dt,S):
         '''Compositional buoyancy'''
