@@ -643,11 +643,23 @@ class Evolution():
         '''Planetary density'''
         return self.planet.rho_0 * (1-r**2/self.planet.L_rho**2 - self.planet.A_rho * r**4/self.planet.L_rho**4)
 
-#class Evolution_Bouchet2013(Evolution):
-#    
-#    def T_liquidus_core(self,P, S):
-#        return 0.
-#
+class Evolution_Bouchet2013(Evolution):  
+    def T_liquidus_core(self,P):
+        a = 31.3
+        c = 1.99
+        P0 = 0.
+        T0 = 1811.
+        return ((P-P0)/a+1.)**(1./c) * T0
+    
+    def dTL_dr_IC(self, x):        
+        K0 = (2./3. * np.pi * self.planet.L_rho**2 * self.planet.rho_0**2 *GC)/1e9
+        L_rho = self.planet.L_rho
+        P0 = 0.
+        T0 = 1811.
+        a = 31.3
+        c = 1.99
+        return -1.0*K0*T0*(2*x/L_rho**2 - 3.2*x**3/L_rho**4)*(-K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4)/a + 1.0)**(1.0/c)/(a*c*(-K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4)/a + 1.0))
+        
         
 class Evolution_Labrosse2015(Evolution):    
     def T_liquidus_core(self,r):
