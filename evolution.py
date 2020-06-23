@@ -460,6 +460,8 @@ class Evolution():
         '''rms dipole field @ surface'''
         Bs = self._Bs (Bc,self.planet.r_planet)
         
+        #u = 1.3 * (self.planet.r_OC/rot)**(1./5.)*(F_th+F_X)**(2./5.)
+        
         if r_IC > self.planet.r_OC or r_IC == self.planet.r_OC:
             M = 0.
             M_ratio = 0.
