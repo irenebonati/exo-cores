@@ -432,8 +432,11 @@ class Evolution():
             QX = PX*drIC_dt 
                                                                         
         P_IC = self.pressure_diff(r_IC) + self.planet.P0
-                
-        S_t = self._S_t(self.planet.S,r_IC)
+        
+        if self.planet.S==0.:
+            S_t=0
+        else:
+            S_t = self._S_t(self.planet.S,r_IC)
 
         '''ICB temperature'''
         T = self.T_liquidus_core(P_IC, S_t)
@@ -476,6 +479,12 @@ class Evolution():
     def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i):
         self.T[i+1] = T
         self.r_IC[i+1] = r_IC
+        if self.r_IC[i+1]>self.r_IC[i] or self.r_IC[i+1]==self.r_IC[i]:
+            self.r_IC[i+1] = r_IC
+            self.S_t[i+1] = S_t
+        else:
+            self.r_IC[i+1] = self.r_IC[i]
+            self.S_t[i+1] = self.S_t[i]
         self.drIC_dt[i+1] = drIC_dt
         self.PC[i+1] = PC
         self.PL[i+1] = PL
@@ -493,7 +502,6 @@ class Evolution():
         self.M[i+1] = M
         self.M_ratio[i+1] = M_ratio
         self.P_IC[i+1] = P_IC
-        self.S_t[i+1] = S_t
         
         return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1],self.S_t[i+1]
 # ------------------------------------------------------------------------------------------------------------------- #   
