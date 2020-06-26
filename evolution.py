@@ -127,6 +127,7 @@ class Evolution():
                     # At what time does an inner core start to form?
                     self.t_IC0 = self.planet.time_vector[i]
                     self.T_IC0 = self.T[i]
+                    self.T_CMB0 = self.T_CMB[i]
 
                     # IC radius and ICB pressure at new time step with T>Tmelt
                     r_IC_form = self.find_r_IC(self.T[i+1],self.planet.S)
