@@ -435,7 +435,7 @@ class Evolution():
         P_IC = self.pressure_diff(r_IC) + self.planet.P0
         
         if self.planet.S==0.:
-            S_t=0
+            S_t=0.
         else:
             S_t = self._S_t(self.planet.S,r_IC)
 
