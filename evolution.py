@@ -215,7 +215,8 @@ class Evolution():
                     assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
 # ------------------------------------------------------------------------------------------------------------------- #
          
-        self.t_mf = 0 # 5 billion years
+        self.t_mf = 0. # 5 billion years
+        self.t_80 = 0.
         '''Magnetic field lifetime routine'''
         for i in range(1,len(self.planet.time_vector)-1):
             if i==1 and self.M[i] !=0 and self.M[i+1]!=0:
@@ -226,12 +227,18 @@ class Evolution():
                 t_end = self.planet.time_vector[i+1]
                 self.t_mf =(t_end-t_start)*1e-9
                 break
-            
         if self.M[1:].all()>0:
                 self.t_mf = 5.
         if self.t_mf > 5.:
             self.t_mf = 5.
-        #print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))     
+        #print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
+            
+        for i in range(1,len(self.planet.time_vector)-1):
+            if self.r_IC[0]/self.planet.r_OC ==0.8 or self.r_IC[0]/self.planet.r_OC>0.8:
+               self.t_80 = 0. 
+            if self.r_IC[i]/self.planet.r_OC ==0.8 or self.r_IC[i]/self.planet.r_OC>0.8:
+                self.t_80 = self.planet.time_vector[i]
+                break
 
 # ------------------------------------------------------------------------------------------------------------------- #
     def plot(self,plots_folder):            
@@ -480,12 +487,7 @@ class Evolution():
     def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i):
         self.T[i+1] = T
         self.r_IC[i+1] = r_IC
-        if self.r_IC[i+1]>self.r_IC[i] or self.r_IC[i+1]==self.r_IC[i]:
-            self.r_IC[i+1] = r_IC
-            self.S_t[i+1] = S_t
-        else:
-            self.r_IC[i+1] = self.r_IC[i]
-            self.S_t[i+1] = self.S_t[i]
+        self.S_t[i+1] = S_t
         self.drIC_dt[i+1] = drIC_dt
         self.PC[i+1] = PC
         self.PL[i+1] = PL
