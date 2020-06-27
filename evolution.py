@@ -644,7 +644,7 @@ class Evolution():
         '''Isentropic heat flux at the CMB, unit: W m-2'''
         return k_c * T_cmb * self.planet.r_OC / (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*rho_OC*GC)))**2#(self.planet.r_planet)**2
     
-    def _F_X(self,r,drIC_dt,S):
+    def _F_X(self,r,drIC_dt,S,r_IC):
         '''Compositional buoyancy'''
         if S==0.:
             self.planet.Deltarho_ICB = 0.
