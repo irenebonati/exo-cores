@@ -384,7 +384,7 @@ class Evolution():
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        #assert QC_ad<Q_CMB
+        assert QC_ad<Q_CMB
         
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
@@ -401,7 +401,7 @@ class Evolution():
         Bs = self._Bs (Bc,self.planet.r_planet)
         
         '''Magnetic moment (Am2)'''
-        M = self._magn_moment(rho_OC,F_th,F_X,r_IC)
+        M = self._magn_moment(F_th,F_X,r_IC)
         
         M_ratio = M/magn_moment_Earth
                 
@@ -453,11 +453,15 @@ class Evolution():
         T_CMB = self.T_adiabat(self.planet.r_OC,T)
         
         rho_OC = self._density(self.planet.r_OC)
+#        if self.planet.r_OC-r_IC !=0:
+#            rho_OC = self.M_OC(r_IC)/(4./3. *np.pi * (self.planet.r_OC-r_IC)**3.)
+#        else:
+#            rho_OC=self.M_OC(r_IC)/(4./3. *np.pi * (r_IC)**3.)
                 
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-#        assert QC_ad<Q_CMB
+        assert QC_ad<Q_CMB
  
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
@@ -478,7 +482,7 @@ class Evolution():
             M_ratio = 0.
         else:
             '''Magnetic moment (Am2)'''
-            M = self._magn_moment(rho_OC,F_th,F_X,r_IC)
+            M = self._magn_moment(F_th,F_X,r_IC)
              
             M_ratio = M/magn_moment_Earth
                                                         
@@ -625,11 +629,11 @@ class Evolution():
         return Bc * (self.planet.r_OC/r_planet)**3 
     
         '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
-    def _magn_moment(self,rho_OC,F_th,F_X,r_IC):
+    def _magn_moment(self,F_th,F_X,r_IC):
         if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0:
             M = 0
         else:
-            M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(rho_OC/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
+            M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
         return M
     
     def _buoyancy_flux(self,F_th,F_X):
