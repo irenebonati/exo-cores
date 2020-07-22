@@ -384,7 +384,7 @@ class Evolution():
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        assert QC_ad<Q_CMB
+        #assert QC_ad<Q_CMB
         
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
@@ -461,7 +461,7 @@ class Evolution():
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        assert QC_ad<Q_CMB
+        #assert QC_ad<Q_CMB
  
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
