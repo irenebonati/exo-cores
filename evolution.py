@@ -71,11 +71,11 @@ class Evolution():
         
 # ------------------------------------------------------------------------------------------------------------------- #
             
-        '''Find initial inner core size and melting temperature'''
+        '''Find initial inner core radius and melting temperature'''
         TL0 = self.T_liquidus_core(self.planet.P0, self.planet.S)
         r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
         
-        '''Check if the radius and melting temperature I find correspond to the ones in the yaml file'''
+        '''Check if the IC radius and melting temperature I find correspond to the ones in the yaml file'''
         if self.planet.S == 0:
             assert int(TL0) == int(self.planet.TL0_0),int(r_IC_0) == int(self.planet.r_IC_0)
         elif self.planet.S == 0.05:
@@ -92,6 +92,14 @@ class Evolution():
             self.T[0] = self.planet.T0 
             self.P_IC[0] = self.planet.P0
             self.S_t[0] = self.planet.S
+            
+        elif self.planet.r_IC_0 > self.planet.r_OC:
+            ''' If the initial inner core is larger than outer core radius (e.g., warm starts), recalculate P, S, and T'''
+            self.P_IC[0] = self.planet.Pcmb
+            self.S_t[0] = 1. 
+            self.T[0] = self.planet.Tcmb
+            '''Correct the inner core radius '''
+            self.planet.r_IC_0 = self.planet.r_OC             
 
         else:                  
             '''If initial inner core, define T by using the melting temperature by Stixrude'''
@@ -701,7 +709,7 @@ class Rocky_Planet():
     
     def parameters(self,Mp,XFe,FeM):
         '''Load parameter files'''
-        self.read_parameters("./Ini_With_DTcmb/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
+        self.read_parameters("./Ini_warm/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml")
         qcmb_ev = pd.read_csv("./Q_CMB/res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
         qcmb_ev.columns = ["time", "H_rad", "T_um","T_cmb","q_surf","qcmb"]

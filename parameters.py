@@ -231,6 +231,6 @@ def explore_all_create_yaml(folder, fig=False):
 if __name__ == "__main__":
 #    filename = name_file(25, 0.8, 10)
 #    write_parameter_file("Ini_With_DTcmb/"+ filename, fig=True)
-    explore_all_create_yaml("Ini_With_DTcmb/", fig=False)
+    explore_all_create_yaml("Ini_warm/", fig=False)
     plt.show()
     
