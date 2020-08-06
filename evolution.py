@@ -20,7 +20,7 @@ Ak                = 2.39              # Radial dependence of conductivity
 beta              = 0.2               # Saturation constant for fast rotating polar dynamos
 mu_0              = 4*np.pi*1e-7      # Magnetic permeability (Hm-1)
 M_Earth           = 5.972e24          # Mass of the Earth (kg)
-k_c               = 150               # Core conductivity (estimated)
+k_c               = 150.               # Core conductivity (estimated)
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
 
 class Evolution():
@@ -96,7 +96,10 @@ class Evolution():
         elif self.planet.r_IC_0 > self.planet.r_OC:
             ''' If the initial inner core is larger than outer core radius (e.g., warm starts), recalculate P, S, and T'''
             self.P_IC[0] = self.planet.Pcmb
-            self.S_t[0] = 1. 
+            if self.planet.S !=0:
+                self.S_t[0] = 1. 
+            else:
+                self.S_t[0] = 0.
             self.T[0] = self.planet.Tcmb
             '''Correct the inner core radius '''
             self.planet.r_IC_0 = self.planet.r_OC             
@@ -391,8 +394,8 @@ class Evolution():
         
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
-        QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        #assert QC_ad<Q_CMB
+        QC_ad = qc_ad *4.*np.pi*self.planet.r_OC**2
+        #assert QC_ad<Q_CMB, (Q_CMB,QC_ad)
         
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
@@ -409,7 +412,7 @@ class Evolution():
         Bs = self._Bs (Bc,self.planet.r_planet)
         
         '''Magnetic moment (Am2)'''
-        M = self._magn_moment(F_th,F_X,r_IC)
+        M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
         
         M_ratio = M/magn_moment_Earth
                 
@@ -461,21 +464,17 @@ class Evolution():
         T_CMB = self.T_adiabat(self.planet.r_OC,T)
         
         rho_OC = self._density(self.planet.r_OC)
-#        if self.planet.r_OC-r_IC !=0:
-#            rho_OC = self.M_OC(r_IC)/(4./3. *np.pi * (self.planet.r_OC-r_IC)**3.)
-#        else:
-#            rho_OC=self.M_OC(r_IC)/(4./3. *np.pi * (r_IC)**3.)
                 
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
-        QC_ad = qc_ad *self.planet.r_OC**2*qcmb
-        #assert QC_ad<Q_CMB
+        QC_ad = qc_ad *4*np.pi*self.planet.r_OC**2
+        #assert QC_ad<Q_CMB, Q_CMB
  
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
         
         '''Compositional buoyancy'''
-        F_X = self._F_X(r_IC,drIC_dt,S_t)
+        F_X = self._F_X(r_IC,drIC_dt,S_t,r_IC)
                                 
         '''rms dipole field @ CMB'''
         Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
@@ -490,7 +489,7 @@ class Evolution():
             M_ratio = 0.
         else:
             '''Magnetic moment (Am2)'''
-            M = self._magn_moment(F_th,F_X,r_IC)
+            M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
              
             M_ratio = M/magn_moment_Earth
                                                         
@@ -637,9 +636,9 @@ class Evolution():
         return Bc * (self.planet.r_OC/r_planet)**3 
     
         '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
-    def _magn_moment(self,F_th,F_X,r_IC):
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0:
-            M = 0
+    def _magn_moment(self,F_th,F_X,r_IC,Q_CMB,QC_ad):
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0 or Q_CMB<QC_ad:
+            M = 0.
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
         return M
@@ -654,15 +653,17 @@ class Evolution():
     
     def _qc_ad(self,k_c,T_cmb,rho_OC):
         '''Isentropic heat flux at the CMB, unit: W m-2'''
-        return k_c * T_cmb * self.planet.r_OC / (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*rho_OC*GC)))**2#(self.planet.r_planet)**2
+        D = (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*self.planet.rho_0*GC)))
+        return k_c * T_cmb * self.planet.r_OC / (D**2)#(self.planet.r_planet)**2
     
-    def _F_X(self,r,drIC_dt,S):
+    def _F_X(self,r,drIC_dt,S,r_IC):
         '''Compositional buoyancy'''
         if S==0.:
             self.planet.Deltarho_ICB = 0.
         else:
             self.planet.Deltarho_ICB = 500./0.11 * S
-        return self.planet.gc * r / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
+        g = 4. * np.pi/3. * GC * self.planet.rho_0 * r_IC*(1.-3./5. * r_IC**2/self.planet.L_rho**2 - 3. * self.planet.A_rho/7. * r_IC**4/self.planet.L_rho**4)
+        return g * r / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
     
     def _density(self,r):
         '''Planetary density'''
@@ -709,7 +710,7 @@ class Rocky_Planet():
     
     def parameters(self,Mp,XFe,FeM):
         '''Load parameter files'''
-        self.read_parameters("./Ini_warm/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
+        self.read_parameters("./Ini_With_DTcmb/M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM))
         #self.read_parameters("Earth.yaml")
         qcmb_ev = pd.read_csv("./Q_CMB/res_t_HS_Tm_Tb_qs_qc_M{:02d}_Fe{:02d}_#FeM{:02d}.res".format(int(10*Mp),int(XFe), int(FeM)), skipinitialspace=True, sep=" ", index_col=False,skiprows=[0])
         qcmb_ev.columns = ["time", "H_rad", "T_um","T_cmb","q_surf","qcmb"]
