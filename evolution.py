@@ -22,6 +22,7 @@ mu_0              = 4*np.pi*1e-7      # Magnetic permeability (Hm-1)
 M_Earth           = 5.972e24          # Mass of the Earth (kg)
 k_c               = 150.               # Core conductivity (estimated)
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
+eta_m             = 2.                # Magnetic diffusivity (m2s-1)
 
 class Evolution():
 
@@ -242,7 +243,8 @@ class Evolution():
                 self.t_mf = 5.
         if self.t_mf > 5.:
             self.t_mf = 5.
-        #print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
+        
+        print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
             
         for i in range(1,len(self.planet.time_vector)-1):
             if self.r_IC[0]/self.planet.r_OC ==0.8 or self.r_IC[0]/self.planet.r_OC>0.8:
@@ -637,7 +639,9 @@ class Evolution():
     
         '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
     def _magn_moment(self,F_th,F_X,r_IC,Q_CMB,QC_ad):
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0 or Q_CMB<QC_ad:
+        u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
+        Rem = (u*(self.planet.r_OC-r_IC))/eta_m
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0 or Q_CMB<QC_ad or Rem<40.:
             M = 0.
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
