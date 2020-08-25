@@ -247,9 +247,9 @@ class Evolution():
         print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
             
         for i in range(1,len(self.planet.time_vector)-1):
-            if self.r_IC[0]/self.planet.r_OC ==0.8 or self.r_IC[0]/self.planet.r_OC>0.8:
+            if self.r_IC[0]/self.planet.r_OC ==0.65 or self.r_IC[0]/self.planet.r_OC>0.65:
                self.t_80 = 0. 
-            if self.r_IC[i]/self.planet.r_OC ==0.8 or self.r_IC[i]/self.planet.r_OC>0.8:
+            if self.r_IC[i]/self.planet.r_OC ==0.65 or self.r_IC[i]/self.planet.r_OC>0.65:
                 self.t_80 = self.planet.time_vector[i]
                 break
 
@@ -665,7 +665,7 @@ class Evolution():
         if S==0.:
             self.planet.Deltarho_ICB = 0.
         else:
-            self.planet.Deltarho_ICB = 500./0.11 * S
+            self.planet.Deltarho_ICB = 600./0.11 * S
         g = 4. * np.pi/3. * GC * self.planet.rho_0 * r_IC*(1.-3./5. * r_IC**2/self.planet.L_rho**2 - 3. * self.planet.A_rho/7. * r_IC**4/self.planet.L_rho**4)
         return g * r / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
     
