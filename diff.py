@@ -31,19 +31,25 @@ fC1 = (r_OC/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (r_OC/L_rho)**2.- 3. / 14. 
 
 fC2 = (x/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (x/L_rho)**2.- 3. / 14. * (0. + 1.) * (2 * A_rho - 0.) * (x/L_rho)**4.)
 
-S = (S * M_OC_0) /(4./3. * sp.pi * rho_0 * L_rho**3 * (fC1-fC2))
+Suii = (S * M_OC_0) /(4./3. * sp.pi * rho_0 * L_rho**3 * (fC1-fC2))
 
-function = 6500. * (P/340.)**(0.515) * 1./(1.-sp.log(1.-S))
+function = 6500. * (P/340.)**(0.515) * 1./(1.-sp.log(1.-Suii))
 
-#der = sp.diff(function,x)
-#print (der)
+der = sp.diff(function,x)
+print (der)
 
 ## Bouchet differentiation
 
-P = P0 - K0 * ((x**2)/(L_rho**2) - (4.*x**4)/(5.*L_rho**4))
+# P = P0 - K0 * ((x**2)/(L_rho**2) - (4.*x**4)/(5.*L_rho**4))
 
-function_Bouchet = ((P-P0)/a+1.)**(1./c) * T0
-der = sp.diff(function_Bouchet,x)
-print ('Bouchet=',der)
+# function_Bouchet = ((P-P0)/a+1.)**(1./c) * T0
+# der = sp.diff(function_Bouchet,x)
+# print ('Bouchet=',der)
+
+
+
+''' Numerically '''
+from scipy.misc import derivative
+
 
 
