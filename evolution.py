@@ -12,6 +12,7 @@ import yaml
 import pandas as pd
 from scipy.misc import derivative
 from scipy.optimize import minimize_scalar
+from scipy.optimize import fsolve
 
 year              = 365.25*3600*24    # 1 year (s)
 GC                = 6.67430e-11
@@ -110,7 +111,6 @@ class Evolution():
             self.P_IC[0] = self.pressure_diff(self.planet.r_IC_0)+self.planet.P0
             self.S_t[0] = self.planet.S * self.M_OC(0)/self.M_OC(self.planet.r_IC_0)
             self.T[0] = self.T_liquidus_core(self.P_IC[0], self.S_t[0])            
-            #self.T[0] = self.T_melt(self.planet.r_IC_0)
             
         '''Initial inner core radius, CMB heat flux set to 0'''
         '''I do this because the first value in the file of Lena is negative'''
@@ -145,7 +145,6 @@ class Evolution():
                     P_IC_form = self.pressure_diff(r_IC_form)+self.planet.P0
                     T_form = self.T[i+1]
                     
-                    
                     Tmelt = self.planet.TL0
                     ratio = (self.T[i]-Tmelt)/(self.T[i]-self.T[i+1])
                     #print ("ratio_NOIC = ",ratio)
@@ -162,7 +161,8 @@ class Evolution():
                     
                     '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
                     r_IC_0 = 1e3
-                    P_IC_0 = self.pressure_diff(r_IC_0)+self.planet.P0         
+                    P_IC_0 = self.pressure_diff(r_IC_0)+self.planet.P0   
+                    T_CMB0 = self.T_CMB[i]
 
                     '''Slowly start growing an inner core'''
                     timesteps = 100
@@ -234,14 +234,19 @@ class Evolution():
                 t_start = 0
             if i!=1 and self.M[i] !=0 and self.M[i+1]!=0 and self.M[i-1]==0:
                 t_start=self.planet.time_vector[i]
+                print (t_start*1e-9)
             if self.M[i+1]==0 and self.M[i]!=0 and self.M[i-1]!=0:
+                t_end = self.planet.time_vector[i+1]
+                self.t_mf =(t_end-t_start)*1e-9
+                break
+            if i==len(self.planet.time_vector)-2 and self.M[i]!=0 and self.M[i-1]!=0:
                 t_end = self.planet.time_vector[i+1]
                 self.t_mf =(t_end-t_start)*1e-9
                 break
         if self.M[1:].all()>0:
                 self.t_mf = 5.
-        if self.t_mf > 5.:
-            self.t_mf = 5.
+        # if self.t_mf > 5.:
+        #     self.t_mf = 5.
         
         print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
             
@@ -415,6 +420,7 @@ class Evolution():
         
     '''Routine for initial inner core'''    
     def update_ic(self, r_IC, Delta_time,qcmb,P_IC,S_t,ratio=1):
+                
         '''Secular cooling power'''
         PC = self._PC(r_IC,P_IC,S_t)
         
@@ -447,12 +453,18 @@ class Evolution():
                                                                         
         P_IC = self.pressure_diff(r_IC) + self.planet.P0
         
-        if self.planet.S==0.:
-            S_t=0.
-        else:
-            S_t = self._S_t(self.planet.S,r_IC)
-
-        '''ICB temperature'''
+        S_t = self._S_t(self.planet.S,r_IC)
+        if self.planet.S!=0. and self.T_liquidus_core(P_IC, 0.) - self.T_liquidus_core(P_IC, S_t) < 1500.: # maximum Tmelt depression in Morard (2012):   
+            S_t = self._S_t(self.planet.S,r_IC) # proceed normally
+            
+        def fun(x):
+            return self.T_liquidus_core(P_IC, 0.) - self.T_liquidus_core(P_IC, x) - 1500.
+                
+        S_t_eut = fsolve(fun, 0.1)
+            
+        if self.T_liquidus_core(P_IC, 0.) - self.T_liquidus_core(P_IC, S_t) > 1500. or S_t>S_t_eut:
+            S_t = S_t_eut # Keep at eutectic composition! (pressure-dependent)  
+            
         T = self.T_liquidus_core(P_IC, S_t)
                     
         '''CMB temperature'''
@@ -463,7 +475,6 @@ class Evolution():
         '''Isentropic heat flux'''
         qc_ad = self._qc_ad(k_c,T_CMB,rho_OC)
         QC_ad = qc_ad *4*np.pi*self.planet.r_OC**2
-        #assert QC_ad<Q_CMB, Q_CMB
  
         '''Thermal buoyancy'''
         F_th = self._F_th(qcmb,qc_ad)
@@ -476,9 +487,7 @@ class Evolution():
         
         '''rms dipole field @ surface'''
         Bs = self._Bs (Bc,self.planet.r_planet)
-        
-        #u = 1.3 * (self.planet.r_OC/rot)**(1./5.)*(F_th+F_X)**(2./5.)
-        
+                
         if r_IC > self.planet.r_OC or r_IC == self.planet.r_OC:
             M = 0.
             M_ratio = 0.
@@ -530,55 +539,22 @@ class Evolution():
             P = P0 - K0 * ((x**2)/(L_rho**2) - (4.*x**4)/(5.*L_rho**4))
             fC1 = (r_OC/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (r_OC/L_rho)**2.- 3. / 14. * (0. + 1)* (2 * A_rho - 0.) * (r_OC/L_rho)**4.)
             fC2 = (x/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (x/L_rho)**2.- 3. / 14. * (0. + 1.) * (2 * A_rho - 0.) * (x/L_rho)**4.)
-            LE = (S * M_OC_0) /(4./3. * np.pi * rho_0 * L_rho**3 * (fC1-fC2))
+            #LE = (S * M_OC_0) /(4./3. * np.pi * rho_0 * L_rho**3 * (fC1-fC2))
+            
+            LE = S * (1.+ (x**3.)/(L_rho**3.*fC1))
+            
             function = 6500. * (P/340.)**(0.515) * 1./(1.-np.log(1.-LE))
             return function
         
         h = 1e3
         der = (fun(x+h)-fun(x-h))/(2*h)
+        #print (x,der,fun(x+h),fun(x-h))
         return der
-#        x = np.linspace(0,1000,200)
-#        der = np.diff(fun(x))/np.diff(x)[0]
-        
-#        der = derivative(function(x,x))
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-
-        # der = -9.84558823529412*K0*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**(-0.485) \
-        #     *(2*x/L_rho**2 - 3.2*x**3/L_rho**4)/(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429 \
-        #     *A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)))) + 1.0) \
-        #     - 4875.0*M_OC_0*S*(-0.00294117647058824*K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + 0.00294117647058824*P0)**0.515*((x/L_rho)**3.0*(-1.71428571428571*A_rho*(x/L_rho)**4.0 \
-        #     /x - 1.2*(x/L_rho)**2.0/x) + 3.0*(x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)/x)/(np.pi*L_rho**3*rho_0*(1.0 - 0.75 \
-        #     *M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429 \
-        #     *A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))))*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0 \
-        #     *(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))**2*(-np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429 \
-        #     *A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)))) + 1.0)**2)
-
-        #der = -166.344690530688*K0*(-K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + P0)**(-0.485)*(2*x/L_rho**2 - 3.2*x**3/L_rho**4)/(1.0 - np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))))) - 242.249549316536*M_OC_0*S*(-K0*(x**2/L_rho**2 - 0.8*x**4/L_rho**4) + P0)**0.515*((x/L_rho)**3.0*(-1.71428571428571*A_rho*(x/L_rho)**4.0/x - 1.2*(x/L_rho)**2.0/x) + 3.0*(x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)/x)/(np.pi*L_rho**3*rho_0*(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))))*(1.0 - np.log(1.0 - 0.75*M_OC_0*S/(np.pi*L_rho**3*rho_0*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0)))))**2*((r_OC/L_rho)**3.0*(-0.428571428571429*A_rho*(r_OC/L_rho)**4.0 - 0.6*(r_OC/L_rho)**2.0 + 1.0) - (x/L_rho)**3.0*(-0.428571428571429*A_rho*(x/L_rho)**4.0 - 0.6*(x/L_rho)**2.0 + 1.0))**2)                                                                                                                                                     
-                                                                                                                                                             
-        #return der
     
     def M_OC(self,r):
         '''Equation M_OC(t) in our paper'''
         if r==self.planet.r_OC:
-            mass = 0
+            mass = 0.
         else:
             mass = 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,self.planet.gamma)-self.fC(r/self.planet.L_rho,self.planet.gamma))
         return mass      
@@ -599,18 +575,19 @@ class Evolution():
     
     def T_liquidus_core(self,P, S):
         '''Melting temperature (Stixrude 2014)'''
-        return 6500.*(P/340.)**(0.515) * (1./(1.-np.log(1.-S)))
+        result = 6500.*(P/340.)**(0.515) * (1./(1.-np.log(1.-S)))
+        return result
     
     def _S_t(self,S,r):
-        if r == self.planet.r_OC:
-            result = 1.
-        elif r == 0.:
+        if r == 0. or S==0.:
             result = self.planet.S
         else:
-            result = S * self.M_OC(0) /self.M_OC(r) 
-
-        if result > 1.:
-            result = 1.            
+            # r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
+            # S0 = S * self.M_OC(0) /self.M_OC(r_IC_0)  
+            if self.M_OC(r) == 0.: # Solid core
+                result =1.
+            else:
+                result = S * self.M_OC(0)/self.M_OC(r)
         return result
      
     def _PL(self, r,P,S):
@@ -672,7 +649,7 @@ class Evolution():
     def _magn_moment(self,F_th,F_X,r_IC,Q_CMB,QC_ad):
         u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r_IC))/eta_m
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0 or Q_CMB<QC_ad or Rem<40.:
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0. or Q_CMB<QC_ad or Rem<40.:
             M = 0.
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
@@ -689,7 +666,7 @@ class Evolution():
     def _qc_ad(self,k_c,T_cmb,rho_OC):
         '''Isentropic heat flux at the CMB, unit: W m-2'''
         D = (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*self.planet.rho_0*GC)))
-        return k_c * T_cmb * self.planet.r_OC / (D**2)#(self.planet.r_planet)**2
+        return k_c * T_cmb * self.planet.r_OC / (D**2)
     
     def _F_X(self,r,drIC_dt,S,r_IC):
         '''Compositional buoyancy'''
