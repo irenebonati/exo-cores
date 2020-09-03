@@ -251,50 +251,51 @@ class Evolution():
         print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
             
         for i in range(1,len(self.planet.time_vector)-1):
-            if self.r_IC[0]/self.planet.r_OC ==0.5 or self.r_IC[0]/self.planet.r_OC>0.5:
+            if self.r_IC[0]/self.planet.r_OC ==0.7 or self.r_IC[0]/self.planet.r_OC>0.7:
                self.t_80 = 0. 
-            if self.r_IC[i]/self.planet.r_OC ==0.5 or self.r_IC[i]/self.planet.r_OC>0.5:
+            if self.r_IC[i]/self.planet.r_OC ==0.7 or self.r_IC[i]/self.planet.r_OC>0.7:
                 self.t_80 = self.planet.time_vector[i]
                 break
 
 # ------------------------------------------------------------------------------------------------------------------- #
     def plot(self,plots_folder):            
             '''Figures'''
-            plt.figure()
+            plt.figure(figsize=(5,4))
             ax1 = plt.gca()
-            ax1.plot(self.planet.time_vector,self.T, color='rebeccapurple')
-            ax1.set_ylabel('Temperature at the center/ICB (K)',color='rebeccapurple')
+            ax1.plot(self.planet.time_vector,self.T_CMB, color='rebeccapurple')
+            ax1.set_ylabel('Temperature at the CMB (K)',color='rebeccapurple')
             ax1.set_xlabel('Time(years)')
             plt.gca().set_xlim([0,5e9]) 
             ax1.tick_params(axis='y', labelcolor='rebeccapurple')
             ax2 = ax1.twinx()  
-            ax2.plot(self.planet.time_vector,self.r_IC/1e3, color='tomato')
-            ax2.set_ylabel('Inner core radius (km)',color='tomato')
-            ax2.tick_params(axis='y', labelcolor='tomato')
+            ax2.plot(self.planet.time_vector,self.r_IC/self.planet.r_OC, color='teal')
+            ax2.set_ylabel('Inner core radius fraction',color='teal')
+            ax2.tick_params(axis='y', labelcolor='teal')
             plt.savefig(plots_folder + 'T+r_IC_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
             
             if self.planet.S>0:
-                plt.figure()
+                plt.figure(figsize=(5,4))
                 plt.plot(self.planet.time_vector,self.S_t *100, color='crimson')
-                plt.ylabel('Fraction of light elements (%)')
+                plt.ylabel('Light element fraction in the outer core (%)')
                 plt.xlabel('Time(years)')
                 plt.xlim([0,5e9])
-                plt.ylim([0,110])
+                plt.ylim([4,7.])
                 plt.savefig(plots_folder + 'LE_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
                 plt.show()
             
-            plt.figure()
-            plt.plot(self.planet.time_vector[1:],self.QC[1:], label='Secular cooling',color='lightseagreen')
-            plt.plot(self.planet.time_vector[1:],self.QL[1:],label='Latent heat',color='sandybrown')
-            plt.plot(self.planet.time_vector[1:],self.QX[1:], label='Gravitational heat',color='pink')
-            plt.plot(self.planet.time_vector[1:],self.QL[1:]+self.QC[1:]+self.QX[1:], label='Total ($Q_{\mathrm{CMB}}$)',color='navy')
+            plt.figure(figsize=(5,4))
+            plt.plot(self.planet.time_vector[1:],self.QC[1:], label='Secular cooling',color='deepskyblue')
+            plt.plot(self.planet.time_vector[1:],self.QL[1:],label='Latent heat',color='firebrick')
+            plt.plot(self.planet.time_vector[1:],self.QX[1:], label='Gravitational heat',color='coral')
+            plt.plot(self.planet.time_vector[1:],self.QL[1:]+self.QC[1:]+self.QX[1:], label='Total ($Q_{\mathrm{CMB}}$)',color='mediumblue')
             plt.xlabel('Time (years)')
             plt.ylabel('Contributions to energy balance (W)')
-            plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
+            #plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
             plt.gca().set_xlim(left=self.planet.time_vector[1])
             plt.legend()
             plt.xlim([0,5e9])
+            plt.ylim([0,5.4e13])
             plt.savefig(plots_folder + 'Energy_balance_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
             
@@ -306,39 +307,47 @@ class Evolution():
             ax[1].plot(self.planet.time_vector,self.T_CMB,color='royalblue')
             ax[1].set_xlabel('Time (years)')
             ax[1].set_ylabel('CMB temperature (K)')
-            plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
+            #plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
             plt.subplots_adjust(wspace=0.4)
             plt.savefig(plots_folder + 'QCMB_TCMB_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
             
-            plt.figure()
-            plt.plot(self.planet.time_vector,self.F_th, label='Temperature',color='tomato')
-            plt.plot(self.planet.time_vector,self.F_X, label='Composition',color='mediumseagreen')
+            plt.figure(figsize=(5,4))
+            plt.plot(self.planet.time_vector[1:],self.F_th[1:], label='Temperature',color='tomato')
+            plt.plot(self.planet.time_vector[1:],self.F_X[1:], label='Composition',color='mediumseagreen')
             plt.xlabel('Time (years)')
             plt.ylabel('Buoyancy fluxes ($m^{2}s^{-3}$)')
-            plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
+            #plt.title('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
             plt.gca().set_xlim(left=self.planet.time_vector[1]) 
             plt.legend()
             plt.xlim([0,5e9])
+            plt.semilogy()
             plt.savefig(plots_folder + 'Fluxes_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
              
             fig, ax = plt.subplots(1, 2, figsize=[10,4],sharex=True)
-            ax[0].plot(self.planet.time_vector,self.Bc * 1e3,label='CMB',color='tomato')
-            ax[0].plot(self.planet.time_vector,self.Bs * 1e3,label='Surface',color='mediumseagreen')
-            ax[0].set_xlabel('Time (years)')
-            ax[0].set_ylabel('rms dipole field (mT)')
-            ax[0].semilogy()
+            #plt.plot(self.planet.time_vector,(self.Bc * 1e3)/0.27,label='CMB',color='tomato')
+            #plt.plot(self.planet.time_vector,(self.Bs * 1e3)/0.032,label='Surface',color='mediumseagreen')
+            plt.plot(self.planet.time_vector,(self.Bc * 1e6),label='CMB',color='tomato')
+            plt.plot(self.planet.time_vector,(self.Bs * 1e6),label='Surface',color='mediumseagreen')
+            plt.xlabel('Time (years)')
+            plt.ylabel('rms dipole field ($\mu$T)')
+            plt.semilogy()
             plt.xlim([0,5e9]) 
-            ax[0].legend()
-            ax[1].plot(self.planet.time_vector,self.M,color='grey')
-            ax[1].set_ylabel('Magnetic moment ($A m^{2}$)')
-            ax2 = ax[1].twinx()  
+            plt.legend()
+            plt.show()
+            
+            plt.figure(figsize=(5,4))
+            ax=plt.gca()
+            ax.plot(self.planet.time_vector[1:],self.M[1:],color='crimson')
+            ax.set_ylabel('Magnetic moment ($A m^{2}$)')
+            ax2 = ax.twinx()  
             ax2.set_ylabel('Magnetic moment present Earth ($A m^{2}$)')  
-            ax2.plot(self.planet.time_vector,self.M_ratio,color='grey')
+            ax2.plot(self.planet.time_vector[1:],self.M_ratio[1:],color='crimson')
             ax2.tick_params(axis='y')
-            ax2.set_xlabel('Time (years)')
-            plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
+            ax.set_xlabel('Time (years)')
+            plt.xlim([0,5e9])
+            #plt.suptitle('$M=$ %.1f $M_{\oplus}$, $C_{\mathrm{Fe}}=$ %.0f wt %%' %(np.float(self.planet.Mp),np.float(self.planet.XFe)))
             plt.subplots_adjust(wspace=0.4)
             plt.savefig(plots_folder + 'MField_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
             plt.show()
@@ -643,7 +652,7 @@ class Evolution():
     
     def _Bs (self,Bc,r_planet):
         '''rms dipole field intensity at the planetary surface, unit:T'''
-        return Bc * (self.planet.r_OC/r_planet)**3 
+        return Bc * (self.planet.r_OC/self.planet.r_planet)**3 
     
         '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
     def _magn_moment(self,F_th,F_X,r_IC,Q_CMB,QC_ad):
