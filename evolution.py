@@ -357,7 +357,7 @@ class Evolution():
     '''Routine for no initial inner core'''
     def update_noic(self,T,Delta_time,qcmb):
         
-        fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
+        fC = self.fC(self.planet.r_OC / self.planet.L_rho, 0.)
                         
         ''' Secular cooling power '''
         PC = (-4*np.pi/3*self.planet.rho_0*self.planet.CP*self.planet.L_rho**3*fC)
