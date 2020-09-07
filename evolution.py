@@ -280,7 +280,7 @@ class Evolution():
                 plt.ylabel('Light element fraction in the outer core (%)')
                 plt.xlabel('Time(years)')
                 plt.xlim([0,5e9])
-                plt.ylim([4,7.])
+                #plt.ylim([4,7.])
                 plt.savefig(plots_folder + 'LE_{}ME_{}XFe_{}FeM.pdf'.format(self.planet.Mp,self.planet.XFe,self.planet.FeM), bbox_inches="tight")
                 plt.show()
             
@@ -410,7 +410,7 @@ class Evolution():
         F_th = self._F_th(qcmb,qc_ad)
         
         '''Compositional buoyancy'''
-        F_X = 0 
+        F_X = 0. 
                 
         S_t = self.planet.S
         
@@ -448,6 +448,8 @@ class Evolution():
             QC = Q_CMB
             QL = 0.
             QX = 0.
+            P_IC = self.planet.Pcmb
+            
         else:    
             '''Inner core growth rate'''
             drIC_dt = Q_CMB/(PC + PL + PX)                         
@@ -458,10 +460,9 @@ class Evolution():
             '''Latent heat power'''
             QL = PL*drIC_dt       
             '''Gravitational heat power'''
-            QX = PX*drIC_dt 
-                                                                        
-        P_IC = self.pressure_diff(r_IC) + self.planet.P0
-        
+            QX = PX*drIC_dt                                                                         
+            P_IC = self.pressure_diff(r_IC) + self.planet.P0
+                
         S_t = self._S_t(self.planet.S,r_IC)
         if self.planet.S!=0. and self.T_liquidus_core(P_IC, 0.) - self.T_liquidus_core(P_IC, S_t) < 1500.: # maximum Tmelt depression in Morard (2012):   
             S_t = self._S_t(self.planet.S,r_IC) # proceed normally
@@ -472,7 +473,7 @@ class Evolution():
         S_t_eut = fsolve(fun, 0.1)
             
         if self.T_liquidus_core(P_IC, 0.) - self.T_liquidus_core(P_IC, S_t) > 1500. or S_t>S_t_eut:
-            S_t = S_t_eut # Keep at eutectic composition! (pressure-dependent)  
+            S_t = S_t_eut # Keep at eutectic composition! (pressure-dependent)
             
         T = self.T_liquidus_core(P_IC, S_t)
                     
@@ -489,7 +490,7 @@ class Evolution():
         F_th = self._F_th(qcmb,qc_ad)
         
         '''Compositional buoyancy'''
-        F_X = self._F_X(r_IC,drIC_dt,S_t,r_IC)
+        F_X = self._F_X(r_IC,drIC_dt,S_t,r_IC,S_t_eut)
                                 
         '''rms dipole field @ CMB'''
         Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
@@ -565,12 +566,12 @@ class Evolution():
         if r==self.planet.r_OC:
             mass = 0.
         else:
-            mass = 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,self.planet.gamma)-self.fC(r/self.planet.L_rho,self.planet.gamma))
+            mass = 4./3. * np.pi * self.planet.rho_0 * self.planet.L_rho**3 * (self.fC(self.planet.r_OC/self.planet.L_rho,0.)-self.fC(r/self.planet.L_rho,0.))
         return mass      
         
     def fC(self, r, delta): 
         '''fC (Eq. A1 Labrosse 2015)'''
-        return r**3. * (1 - 3. / 5. * (delta + 1) * r**2.- 3. / 14. * (delta + 1) \
+        return r**3. * (1 - 3./5. * (delta + 1) * r**2.- 3./14. * (delta + 1) \
             * (2 * self.planet.A_rho - delta) * r**4.)
 
     def fX(self, x, r):
@@ -610,12 +611,12 @@ class Evolution():
                 * (self.dTL_dr_IC(r) + (2. * self.planet.gamma \
                 * self.T_liquidus_core(P, S) * r / self.planet.L_rho**2.) *(1 + 2. * self.planet.A_rho * r**2. / self.planet.L_rho**2.) \
                 /(1 - r**2. / self.planet.L_rho**2. - self.planet.A_rho * r**4. / self.planet.L_rho**4.)) \
-                * (self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)-self.fC(r / self.planet.L_rho, self.planet.gamma))
+                * (self.fC(self.planet.r_OC / self.planet.L_rho, 0.)-self.fC(r / self.planet.L_rho, 0.))
 
     def _PX(self, r):
         ''' Gravitational heat power (Eq. A14 Labrosse 2015)'''
         return 8 * np.pi**2 * self.planet.chi0 * GC * self.planet.rho_0**2 * self.planet.beta * r**2. \
-        * self.planet.L_rho**2. / self.fC(self.planet.r_OC / self.planet.L_rho, 0) \
+        * self.planet.L_rho**2. / self.fC(self.planet.r_OC / self.planet.L_rho, 0.) \
         * (self.fX(self.planet.r_OC / self.planet.L_rho, r) - self.fX(r / self.planet.L_rho, r))
 
     def pressure_diff(self,r):  
@@ -677,9 +678,9 @@ class Evolution():
         D = (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*self.planet.rho_0*GC)))
         return k_c * T_cmb * self.planet.r_OC / (D**2)
     
-    def _F_X(self,r,drIC_dt,S,r_IC):
+    def _F_X(self,r,drIC_dt,S,r_IC,S_eut):
         '''Compositional buoyancy'''
-        if S==0.:
+        if S==0. or S==S_eut:
             self.planet.Deltarho_ICB = 0.
         else:
             self.planet.Deltarho_ICB = 600./0.11 * S
