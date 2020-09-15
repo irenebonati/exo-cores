@@ -6,6 +6,10 @@ Created on Tue May 12 16:51:24 2020
 @author: irenebonati
 """
 
+# -------------------------------------------------------------------------- #
+#                              PACKAGES                                      #
+# -------------------------------------------------------------------------- #
+
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
@@ -14,17 +18,26 @@ from scipy.misc import derivative
 from scipy.optimize import minimize_scalar
 from scipy.optimize import fsolve
 
+# -------------------------------------------------------------------------- #
+#                             CONSTANTS                                      #
+# -------------------------------------------------------------------------- #
+
 year              = 365.25*3600*24    # 1 year (s)
-GC                = 6.67430e-11
-Ak                = 2.39              # Radial dependence of conductivity
+GC                = 6.67430e-11       # Gravitational constant
 beta              = 0.2               # Saturation constant for fast rotating polar dynamos
 mu_0              = 4*np.pi*1e-7      # Magnetic permeability (Hm-1)
 M_Earth           = 5.972e24          # Mass of the Earth (kg)
-k_c               = 150.               # Core conductivity (estimated)
+k_c               = 150.              # Core conductivity (estimated)
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
 eta_m             = 2.                # Magnetic diffusivity (m2s-1)
 
+# -------------------------------------------------------------------------- #
+#                             EVOLUTION                                      #
+# -------------------------------------------------------------------------- #
+                 
 class Evolution():
+    ''' Calculates the thermal evolution of a planetary core, starting from a
+    .yaml file obtained from the interior structure model '''
 
     def __init__(self, planet):
         self.planet = planet
@@ -357,7 +370,7 @@ class Evolution():
     '''Routine for no initial inner core'''
     def update_noic(self,T,Delta_time,qcmb):
         
-        fC = self.fC(self.planet.r_OC / self.planet.L_rho, 0.)
+        fC = self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)
                         
         ''' Secular cooling power '''
         PC = (-4*np.pi/3*self.planet.rho_0*self.planet.CP*self.planet.L_rho**3*fC)
@@ -547,6 +560,7 @@ class Evolution():
         
         def fun(x):
             P = P0 - K0 * ((x**2)/(L_rho**2) - (4.*x**4)/(5.*L_rho**4))
+            # Here delta is set to 0!
             fC1 = (r_OC/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (r_OC/L_rho)**2.- 3. / 14. * (0. + 1)* (2 * A_rho - 0.) * (r_OC/L_rho)**4.)
             fC2 = (x/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (x/L_rho)**2.- 3. / 14. * (0. + 1.) * (2 * A_rho - 0.) * (x/L_rho)**4.)
             #LE = (S * M_OC_0) /(4./3. * np.pi * rho_0 * L_rho**3 * (fC1-fC2))
@@ -611,7 +625,7 @@ class Evolution():
                 * (self.dTL_dr_IC(r) + (2. * self.planet.gamma \
                 * self.T_liquidus_core(P, S) * r / self.planet.L_rho**2.) *(1 + 2. * self.planet.A_rho * r**2. / self.planet.L_rho**2.) \
                 /(1 - r**2. / self.planet.L_rho**2. - self.planet.A_rho * r**4. / self.planet.L_rho**4.)) \
-                * (self.fC(self.planet.r_OC / self.planet.L_rho, 0.)-self.fC(r / self.planet.L_rho, 0.))
+                * (self.fC(self.planet.r_OC / self.planet.L_rho, self.planet.gamma)-self.fC(r / self.planet.L_rho, self.planet.gamma))
 
     def _PX(self, r):
         ''' Gravitational heat power (Eq. A14 Labrosse 2015)'''
