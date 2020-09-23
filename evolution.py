@@ -27,7 +27,7 @@ GC                = 6.67430e-11       # Gravitational constant
 beta              = 0.2               # Saturation constant for fast rotating polar dynamos
 mu_0              = 4*np.pi*1e-7      # Magnetic permeability (Hm-1)
 M_Earth           = 5.972e24          # Mass of the Earth (kg)
-k_c               = 150.              # Core conductivity (estimated)
+k_c               = 150.              # Core conductivity (estimated) #change between 60,150,or250
 magn_moment_Earth = 7.8e22            # Magnetic moment Earth (Am2)
 eta_m             = 2.                # Magnetic diffusivity (m2s-1)
 
@@ -183,7 +183,7 @@ class Evolution():
                     sum_ratio=0
                     Q_CMB_0= 0
                     for m in range(timesteps):
-                        dt = dt_rem/timesteps #self.Delta_time[i+1]/timesteps#dt_rem/2**(timesteps-m-1) 
+                        dt = dt_rem/timesteps 
                         tmp += dt
                             
                         ratio_0 = dt/self.Delta_time[i+1]
@@ -204,12 +204,6 @@ class Evolution():
                             QX = PX*drIC_dt
 
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)
-                    #print((1-ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi/1e13)
-                    #assert tmp == self.Delta_time[i+1]-Delta_t_IC, (tmp, self.Delta_time[i+1]-Delta_t_IC)
-                    #assert dt_rem == 0, self.Delta_time[i+1]
-                    #assert r_IC < r_IC_form, (r_IC,r_IC_form)
-                    #assert T > T_form, (T, T_form)
-                    #print (T,T_form)
                     assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
                     assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
             else: 
@@ -235,11 +229,10 @@ class Evolution():
                         T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],self.S_t[i],ratio=ratio_0)
                         Q_CMB_0 += Q_CMB
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)
-                    #assert dt_rem == 0, self.Delta_time[i+1]
                     assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
 # ------------------------------------------------------------------------------------------------------------------- #
          
-        self.t_mf = 0. # 5 billion years
+        self.t_mf = 0. 
         self.t_80 = 0.
         '''Magnetic field lifetime routine'''
         for i in range(1,len(self.planet.time_vector)-1):
@@ -251,17 +244,17 @@ class Evolution():
             if self.M[i+1]==0 and self.M[i]!=0 and self.M[i-1]!=0:
                 t_end = self.planet.time_vector[i+1]
                 self.t_mf =(t_end-t_start)*1e-9
+                print (t_end,t_start)
                 break
             if i==len(self.planet.time_vector)-2 and self.M[i]!=0 and self.M[i-1]!=0:
                 t_end = self.planet.time_vector[i+1]
                 self.t_mf =(t_end-t_start)*1e-9
                 break
-        if self.M[1:].all()>0:
+        if self.M[1:-1].all()>0:
                 self.t_mf = 5.
-        # if self.t_mf > 5.:
-        #     self.t_mf = 5.
+
         
-        print ("The magnetic field lifetime is %.2f billion years."%(self.t_mf))  
+        print ("The magnetic field lifetime is %.7f billion years."%(self.t_mf))  
             
         for i in range(1,len(self.planet.time_vector)-1):
             if self.r_IC[0]/self.planet.r_OC ==0.7 or self.r_IC[0]/self.planet.r_OC>0.7:
@@ -565,6 +558,7 @@ class Evolution():
             fC2 = (x/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (x/L_rho)**2.- 3. / 14. * (0. + 1.) * (2 * A_rho - 0.) * (x/L_rho)**4.)
             #LE = (S * M_OC_0) /(4./3. * np.pi * rho_0 * L_rho**3 * (fC1-fC2))
             
+            # This approximation gives the same results and extends the validity of this equation
             LE = S * (1.+ (x**3.)/(L_rho**3.*fC1))
             
             function = 6500. * (P/340.)**(0.515) * 1./(1.-np.log(1.-LE))
@@ -606,8 +600,6 @@ class Evolution():
         if r == 0. or S==0.:
             result = self.planet.S
         else:
-            # r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
-            # S0 = S * self.M_OC(0) /self.M_OC(r_IC_0)  
             if self.M_OC(r) == 0.: # Solid core
                 result =1.
             else:
