@@ -76,6 +76,7 @@ class Evolution():
         self.Bc = np.zeros_like(self.planet.time_vector)
         self.Bs = np.zeros_like(self.planet.time_vector)
         self.M = np.zeros_like(self.planet.time_vector)
+        self.M_Aubert = np.zeros_like(self.planet.time_vector)
         self.M_ratio = np.zeros_like(self.planet.time_vector)
         self.P_IC = np.zeros_like(self.planet.time_vector)
         self.S_t = np.zeros_like(self.planet.time_vector)
@@ -140,9 +141,9 @@ class Evolution():
             '''No initial inner core --> update_noic routine'''
             if self.r_IC[i] == 0.0 and self.T[i] > self.planet.TL0:
                               
-                T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_noic(self.T[i],self.Delta_time[i+1],self.planet.qcmb[i])
+                T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t,M_Aubert =  self.update_noic(self.T[i],self.Delta_time[i+1],self.planet.qcmb[i])
                 '''Shift updated value to the next time step'''
-                T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)               
+                T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i)               
                 assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
                
                 '''If T is lower than Tmelt we start forming an inner core'''
@@ -168,9 +169,9 @@ class Evolution():
                     dt_rem = self.Delta_time[i+1]-Delta_t_IC  # Remaining time step
                     
                     ''' Go "back" and calculate the heat budget until an inner core starts forming --> use Delta_t_IC'''
-                    T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_noic(self.T[i],Delta_t_IC,self.planet.qcmb[i])
+                    T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t,M_Aubert =  self.update_noic(self.T[i],Delta_t_IC,self.planet.qcmb[i])
                     '''Shift updated value to the next time step'''
-                    T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)                    
+                    T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i)                    
                     
                     '''Take a small initial inner core radius in order not to overshoot heat budget terms'''
                     r_IC_0 = 1e3
@@ -190,7 +191,7 @@ class Evolution():
                         sum_ratio+=ratio_0
 
                         '''With inner core --> update_ic routine and use dt'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,self.planet.S,ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB ,T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t,M_Aubert =  self.update_ic(r_IC_0, dt,self.planet.qcmb[i],P_IC_0,self.planet.S,ratio=ratio_0)
 
                         r_IC_0 = r_IC
                         P_IC_0 = P_IC
@@ -203,7 +204,7 @@ class Evolution():
                             QC = PC*drIC_dt
                             QX = PX*drIC_dt
 
-                        T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)
+                        T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i)
                     assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
                     assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
             else: 
@@ -226,9 +227,9 @@ class Evolution():
                         dt_rem-=dt
                         
                         '''Initial inner core --> update_ic routine'''  
-                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],self.S_t[i],ratio=ratio_0)
+                        T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t,M_Aubert =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],self.S_t[i],ratio=ratio_0)
                         Q_CMB_0 += Q_CMB
-                        T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i)
+                        T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i)
                     assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
 # ------------------------------------------------------------------------------------------------------------------- #
          
@@ -345,7 +346,8 @@ class Evolution():
             
             plt.figure(figsize=(5,4))
             ax=plt.gca()
-            ax.plot(self.planet.time_vector[1:],self.M[1:],color='crimson')
+            #ax.plot(self.planet.time_vector[1:],self.M[1:],color='crimson')
+            ax.plot(self.planet.time_vector[1:],self.M_Aubert[1:],color='grey')
             ax.set_ylabel('Magnetic moment ($A m^{2}$)')
             ax2 = ax.twinx()  
             ax2.set_ylabel('Magnetic moment present Earth ($A m^{2}$)')  
@@ -428,10 +430,11 @@ class Evolution():
         
         '''Magnetic moment (Am2)'''
         M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
+        M_Aubert = self._M_Aubert(r_IC,F_th,F_X)*1e6
         
         M_ratio = M/magn_moment_Earth
                 
-        return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t
+        return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert
         
     '''Routine for initial inner core'''    
     def update_ic(self, r_IC, Delta_time,qcmb,P_IC,S_t,ratio=1):
@@ -506,16 +509,18 @@ class Evolution():
                 
         if r_IC > self.planet.r_OC or r_IC == self.planet.r_OC:
             M = 0.
+            M_Aubert=0.
             M_ratio = 0.
         else:
             '''Magnetic moment (Am2)'''
             M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
+            M_Aubert = self._M_Aubert(r_IC,F_th,F_X)*1e6
              
             M_ratio = M/magn_moment_Earth
                                                         
-        return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t
+        return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert
     
-    def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,i):
+    def update_value(self,T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i):
         self.T[i+1] = T
         self.r_IC[i+1] = r_IC
         self.S_t[i+1] = S_t
@@ -534,10 +539,11 @@ class Evolution():
         self.Bc[i+1] = Bc
         self.Bs[i+1] = Bs
         self.M[i+1] = M
+        self.M_Aubert[i+1] = M_Aubert
         self.M_ratio[i+1] = M_ratio
         self.P_IC[i+1] = P_IC
         
-        return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1],self.S_t[i+1]
+        return self.T[i+1],self.r_IC[i+1], self.drIC_dt[i+1],self.PC[i+1],self.PL[i+1],self.PX[i+1],self.Q_CMB[i+1],self.T_CMB[i+1],self.QC[i+1],self.QL[i+1],self.QX[i+1],self.qc_ad[i+1],self.F_th[i+1],self.F_X[i+1],self.Bc[i+1],self.Bs[i+1],self.M[i+1],self.M_ratio[i+1],self.P_IC[i+1],self.S_t[i+1],self.M_Aubert[i+1]
 # ------------------------------------------------------------------------------------------------------------------- #   
 
     def dTL_dr_IC(self,x):
@@ -661,14 +667,30 @@ class Evolution():
         '''rms dipole field intensity at the planetary surface, unit:T'''
         return Bc * (self.planet.r_OC/self.planet.r_planet)**3 
     
-        '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
     def _magn_moment(self,F_th,F_X,r_IC,Q_CMB,QC_ad):
+        '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
         u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r_IC))/eta_m
         if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0. or Q_CMB<QC_ad or Rem<40.:
             M = 0.
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
+        return M
+    
+    def _M_Aubert(self,r,F_th,F_X):
+        '''Magnetic moment (Aubert et al.,2009)'''
+        if (F_th+F_X)>0.:
+            fi = F_X/(F_X+F_th)
+            gam = (3*(self.planet.r_OC-r)**2.)/(2*(self.planet.r_OC**3. - r**3.)*self.planet.r_OC) *(fi*(3./5. * (self.planet.r_OC**5. -r**5.)/(self.planet.r_OC**3. -r**3.)-r**2.) + (1-fi)*(self.planet.r_OC**2. - 3./5.*(self.planet.r_OC**5.-r**5.)/(self.planet.r_OC**3.-r**3.)))
+            D = self.planet.r_OC-r
+            RaQ = (self.planet.gc * (F_th+F_X))/(4*np.pi*self.planet.rho_0 *(D)**4.)
+            p = gam*RaQ
+            f_ohm = 1.
+            c1 = 1.65
+            asp = r/self.planet.r_OC
+            M = (4*np.pi*self.planet.r_OC**3.)/(np.sqrt(2.*mu_0)) * (c1 * np.sqrt(f_ohm)*(p)**(0.34)*np.sqrt(self.planet.rho_0)*D)/(7.3 * (1.-asp)*(1.+fi))
+        else:
+            M=0.
         return M
     
     def _buoyancy_flux(self,F_th,F_X):
