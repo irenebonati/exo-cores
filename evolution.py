@@ -431,7 +431,7 @@ class Evolution():
         
         '''Magnetic moment (Am2)'''
         M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
-        M_Aubert = self._M_Aubert(r_IC,F_th,F_X)*1e6
+        M_Aubert = self._M_Aubert(r_IC,F_th,F_X,Q_CMB,QC_ad)*1e6
         
         M_ratio = M/magn_moment_Earth
                 
@@ -515,7 +515,7 @@ class Evolution():
         else:
             '''Magnetic moment (Am2)'''
             M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
-            M_Aubert = self._M_Aubert(r_IC,F_th,F_X)*1e6
+            M_Aubert = self._M_Aubert(r_IC,F_th,F_X,Q_CMB,QC_ad)*1e6
              
             M_ratio = M/magn_moment_Earth
                                                         
@@ -678,9 +678,13 @@ class Evolution():
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
         return M
     
-    def _M_Aubert(self,r,F_th,F_X):
+    def _M_Aubert(self,r,F_th,F_X,Q_CMB,QC_ad):
         '''Magnetic moment (Aubert et al.,2009)'''
-        if (F_th+F_X)>0.:
+        u = 1.3 * ((self.planet.r_OC-r)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
+        Rem = (u*(self.planet.r_OC-r))/eta_m
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r) == 0. or Q_CMB<QC_ad or Rem<40.:
+            M = 0.
+        else:
             fi = F_X/(F_X+F_th)
             gam = (3*(self.planet.r_OC-r)**2.)/(2*(self.planet.r_OC**3. - r**3.)*self.planet.r_OC) *(fi*(3./5. * (self.planet.r_OC**5. -r**5.)/(self.planet.r_OC**3. -r**3.)-r**2.) + (1-fi)*(self.planet.r_OC**2. - 3./5.*(self.planet.r_OC**5.-r**5.)/(self.planet.r_OC**3.-r**3.)))
             D = self.planet.r_OC-r
@@ -690,8 +694,6 @@ class Evolution():
             c1 = 1.65
             asp = r/self.planet.r_OC
             M = (4*np.pi*self.planet.r_OC**3.)/(np.sqrt(2.*mu_0)) * (c1 * np.sqrt(f_ohm)*(p)**(0.34)*np.sqrt(self.planet.rho_0)*D)/(7.3 * (1.-asp)*(1.+fi))
-        else:
-            M=0.
         return M
     
     def _buoyancy_flux(self,F_th,F_X):
@@ -715,7 +717,7 @@ class Evolution():
             self.planet.Deltarho_ICB = 600./0.11 * S
         
         g = 4. * np.pi/3. * GC * self.planet.rho_0 * r_IC*(1.-3./5. * r_IC**2/self.planet.L_rho**2 - 3. * self.planet.A_rho/7. * r_IC**4/self.planet.L_rho**4)
-        return g * r / self.planet.r_OC * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
+        return g * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
 
 
 class Evolution_Bouchet2013(Evolution):  
