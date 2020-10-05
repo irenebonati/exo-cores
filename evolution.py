@@ -241,11 +241,9 @@ class Evolution():
                 t_start = 0
             if i!=1 and self.M[i] !=0 and self.M[i+1]!=0 and self.M[i-1]==0:
                 t_start=self.planet.time_vector[i]
-                print (t_start*1e-9)
             if self.M[i+1]==0 and self.M[i]!=0 and self.M[i-1]!=0:
                 t_end = self.planet.time_vector[i+1]
                 self.t_mf =(t_end-t_start)*1e-9
-                print (t_end,t_start)
                 break
             if i==len(self.planet.time_vector)-2 and self.M[i]!=0 and self.M[i-1]!=0:
                 t_end = self.planet.time_vector[i+1]
@@ -430,10 +428,15 @@ class Evolution():
         Bs = self._Bs (Bc,self.planet.r_planet)
         
         '''Magnetic moment (Am2)'''
-        M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
-        M_Aubert = self._M_Aubert(r_IC,F_th,F_X,Q_CMB,QC_ad)*1e6
+        if Q_CMB<QC_ad:
+        	M=0.
+        	M_Aubert=0.
+        	M_ratio=0.
+        else:
+        	M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
+        	M_Aubert = self._M_Aubert(r_IC,F_th,F_X,Q_CMB,QC_ad)*1e6
         
-        M_ratio = M/magn_moment_Earth
+        	M_ratio = M/magn_moment_Earth
                 
         return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert
         
@@ -672,7 +675,7 @@ class Evolution():
         '''Magnetic moment, unit:Am2 (Olson & Christensen 2006)'''
         u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r_IC))/eta_m
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0. or Q_CMB<QC_ad or Rem<40.:
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0. or Rem<40.: #or Q_CMB<QC_ad
             M = 0.
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
@@ -682,7 +685,7 @@ class Evolution():
         '''Magnetic moment (Aubert et al.,2009)'''
         u = 1.3 * ((self.planet.r_OC-r)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r))/eta_m
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r) == 0. or Q_CMB<QC_ad or Rem<40.:
+        if (F_th + F_X) < 0. or (self.planet.r_OC-r) == 0. or Rem<40.: #or Q_CMB<QC_ad
             M = 0.
         else:
             fi = F_X/(F_X+F_th)
@@ -715,8 +718,7 @@ class Evolution():
             self.planet.Deltarho_ICB = 0.
         else:
             self.planet.Deltarho_ICB = 600./0.11 * S
-        
-        g = 4. * np.pi/3. * GC * self.planet.rho_0 * r_IC*(1.-3./5. * r_IC**2/self.planet.L_rho**2 - 3. * self.planet.A_rho/7. * r_IC**4/self.planet.L_rho**4)
+        g = 4. * np.pi/3. * GC * self.planet.rho_0 * r_IC*(1.-3./5. * ((r_IC)**2)/((self.planet.L_rho)**2) - 3. * self.planet.A_rho/7. * ((r_IC)**4.)/((self.planet.L_rho)**4.))
         return g * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
 
 
