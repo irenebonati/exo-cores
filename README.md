@@ -5,7 +5,7 @@ This package is the implementation of the equations for the energy budget of the
 
 ## Installation
 
-Requirements: python (>3.6), numpy, scipy, matplotlib, pandas
+Requirements: python (>3.6), numpy, scipy, matplotlib, pandas, pyyaml
 
 You can install the package with python thanks to the setup.py
 
