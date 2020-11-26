@@ -12,3 +12,13 @@ You can install the package with python thanks to the setup.py
 python setup.py install
 
 
+## Notebooks
+
+
+## How to cite this work
+
+Scientific publication: 
+
+Cite the package: 
+
+
