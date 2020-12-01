@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{url} %this package should fix any errors with URLs in refs.
+\usepackage{lineno}
+\usepackage[inline]{trackchanges} %for better track changes. finalnew option will compile document with changes incorporated.
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+%\graphicspath{{fig/}}
+
+
+\title{Melting curve of iron}
+
+\begin{document}
+\maketitle
+
+\begin{itemize}
+    \item \citet{stixrude2014melting} : melting curve used is from \citet{morard2011melting}, (they say they "re-fit" the value in it). To take into account the depression due to light elements, they consider the "cryoscopic equation" (They cite the Atkins, a big book of chemistry. $x$ is the mole fraction of the main phase, here iron) $T=T_{pure}/(1-\ln x)$ with $x=0.89$ (they use this value because it provides a reasonnable value for the melting T of core at the ICB... But not sure exactly which value they consider reasonnable? They cite two papers from 2002)
+    \item \citet{morard2011melting} : we should ask Guillaume for the equation of the melting curve? It's not given in the paper.
+\end{itemize}
+
+
+\bibliography{biblio.bib}
+
+
+\end{document}

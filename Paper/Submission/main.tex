@@ -1,0 +1,916 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AGUJournalTemplate.tex: this template file is for articles formatted with LaTeX
+%
+% This file includes commands and instructions
+% given in the order necessary to produce a final output that will
+% satisfy AGU requirements, including customized APA reference formatting.
+%
+% You may copy this file and give it your
+% article name, and enter your text.
+%
+%
+
+%% To submit your paper:
+\documentclass[draft]{agujournal2019} % [draft,jgrga]{agutexSI2019}
+\usepackage{url} %this package should fix any errors with URLs in refs.
+\usepackage{lineno}
+\usepackage[inline]{trackchanges} %for better track changes. finalnew option will compile document with changes incorporated.
+\usepackage{soul}
+\usepackage{textcomp}
+\linenumbers
+%%%%%%%
+% As of 2018 we recommend use of the TrackChanges package to mark revisions.
+% The trackchanges package adds five new LaTeX commands:
+%
+%  \note[editor]{The note}
+%  \annote[editor]{Text to annotate}{The note}
+%  \add[editor]{Text to add}
+%  \remove[editor]{Text to remove}
+%  \change[editor]{Text to remove}{Text to add}
+%
+% complete documentation is here: http://trackchanges.sourceforge.net/
+%%%%%%%
+
+\draftfalse
+
+%% Enter journal name below.
+%% Choose from this list of Journals:
+%
+% JGR: Atmospheres
+% JGR: Biogeosciences
+% JGR: Earth Surface
+% JGR: Oceans
+% JGR: Planets
+% JGR: Solid Earth
+% JGR: Space Physics
+% Global Biogeochemical Cycles
+% Geophysical Research Letters
+% Paleoceanography and Paleoclimatology
+% Radio Science
+% Reviews of Geophysics
+% Tectonics
+% Space Weather
+% Water Resources Research
+% Geochemistry, Geophysics, Geosystems
+% Journal of Advances in Modeling Earth Systems (JAMES)
+% Earth's Future
+% Earth and Space Science
+% Geohealth
+%
+% ie, \journalname{Water Resources Research}
+
+\journalname{JGR: Planets}
+
+%% For our comments
+\definecolor{greenblue}{RGB}{0,127,127}
+\definecolor{orange}{RGB}{255,165,0}
+\newcommand{\marine}[1]{\textcolor{greenblue}{\textit{(Marine: #1)}}}
+\newcommand{\irene}[1]{\textcolor{orange}{\textit{(Irene: #1)}}}
+\newcommand{\lena}[1]{\textcolor{blue}{\textit{(Lena: #1)}}}
+\newcommand{\lenaadd}[1]{\textcolor{blue}{#1}}
+\newcommand{\TODO}[1]{\textcolor{red}{\textit{(TODO: #1)}}}
+\newcommand{\citehere}[1]{\textcolor{red}{\textit{[[Citation needed #1]]}}}
+
+\begin{document}
+%% ------------------------------------------------------------------------ %%
+%  Title
+%
+% (A title should be specific, informative, and brief. Use
+% abbreviations only if they are defined in the abstract. Titles that
+% start with general keywords then specific terms are optimized in
+% searches)
+%
+%% ------------------------------------------------------------------------ %%
+
+\title{Structure and thermal evolution of exoplanetary cores}
+
+%% ------------------------------------------------------------------------ %%
+%
+%  AUTHORS AND AFFILIATIONS
+%
+%% ------------------------------------------------------------------------ %%
+
+% Authors are individuals who have significantly contributed to the
+% research and preparation of the article. Group authors are allowed, if
+% each author in the group is separately identified in an appendix.)
+
+% List authors by first name or initial followed by last name and
+% separated by commas. Use \affil{} to number affiliations, and
+% \thanks{} for author notes.
+% Additional author notes should be indicated with \thanks{} (for
+% example, for current addresses).
+
+\authors{Irene Bonati\affil{1}, Marine Lasbleis\affil{1,2}, and Lena Noack\affil{3}}
+
+%\affiliation{=number=}{=Affiliation Address=}
+\affiliation{1}{Earth-Life Science Institute, Tokyo Institute of Technology, Tokyo 152-8550, Japan}
+\affiliation{2}{Laboratoire de
+Plan\'etologie et G\'eodynamique, LPG, UMR 6112, CNRS, Universit\'e de Nantes, Universit\'e d'Angers, France}
+\affiliation{3}{Department for Earth Sciences, Freie Universit\"at Berlin, Malteserstr. 74-100, D-12249 Berlin, Germany}
+
+%% Corresponding Author:
+\correspondingauthor{Irene Bonati}{irene.bonati@elsi.jp}
+
+%  List up to three key points (at least one is required)
+%  Key Points summarize the main points and conclusions of the article
+%  Each must be 100 characters or less with no special characters or punctuation and must be complete sentences
+
+\begin{keypoints}
+%\irene{Up to 3 key points are required, 140 characters each.}
+\item We investigate the evolution of the cores of rocky planets with masses between 0.8 and 2 Earth masses and variable bulk and mantle iron contents.
+\item The content and distribution of iron in a planetary body influences core evolution and magnetic field lifetimes significantly. 
+\item Despite producing stronger magnetic fields, the cores of iron-rich planets tend to become mostly or completely solid, which shortens the dynamo lifetime.
+\end{keypoints}
+
+%% ------------------------------------------------------------------------ %%
+%
+%  ABSTRACT and PLAIN LANGUAGE SUMMARY
+%
+% A good Abstract will begin with a short description of the problem
+% being addressed, briefly describe the new data or analyses, then
+% briefly states the main conclusion(s) and how they are supported and
+% uncertainties.
+
+% The Plain Language Summary should be written for a broad audience,
+% including journalists and the science-interested public, that will not have 
+% a background in your field.
+%
+% A Plain Language Summary is required in GRL, JGR: Planets, JGR: Biogeosciences,
+% JGR: Oceans, G-Cubed, Reviews of Geophysics, and JAMES.
+% see http://sharingscience.agu.org/creating-plain-language-summary/)
+%
+% ------------------------------------------------------------------------ %%
+
+%% ------------------------------------------------------------------------ 
+%  ABSTRACT and PLAIN LANGUAGE SUMMARY
+%
+% A Plain Language Summary is required in GRL, JGR: Planets, JGR: Biogeosciences, JGR: Oceans, G-Cubed, Reviews of Geophysics, and JAMES.
+% see http://sharingscience.agu.org/creating-plain-language-summary/)
+%
+%% ------------------------------------------------------------------------ %%
+\begin{abstract}
+%\irene{247/250 words}
+Most of the large terrestrial bodies in the solar system display evidence of past and/or current magnetic activity, which is thought to be driven by thermo-chemical convection in an electrically conducting fluid layer. The discovery of a large number of extrasolar planets motivates the search of magnetic fields beyond the solar system. While current observations are limited to their radius and minimum mass, studying the evolution of exoplanetary magnetic fields and their interaction with the atmosphere can open new avenues for constraining interior properties from future atmospheric observations. 
+Here, we investigate the evolution of massive planets ($0.8-2$~$M_{\rm Earth}$) with different bulk and mantle iron contents. Starting from their temperature profiles at the end of accretion, we determine the structure of the core and model its subsequent thermal and magnetic evolution over $5$~Gyr. We find that the planetary iron content strongly affects core structure and evolution, as well as the lifetime of a magnetic field. Iron-rich planets feature large solid inner cores which can grow up to the liquid outer core radius, shutting down any pre-existing magnetic activity. As a consequence, the longest magnetic field lifetimes ($\sim 4.15$~Gyr) are obtained for planets with intermediate iron inventories ($50-60$~wt.\%). The presence of a small fraction of light impurities keeps the core liquid for longer and extends the magnetic field lifetime to more than $5$~Gyr. Even though the generated magnetic fields are too weak to be detected by ground facilities, indirect observations can help shedding light on exoplanetary magnetic activity. 
+\end{abstract}
+
+\section*{Plain Language Summary}
+%\irene{200/200 words}
+Earth's magnetic field is powered by vigorous convection in its liquid metallic outer core. The presence of a magnetic field is thought to help the stability of habitable surface conditions by shielding the planetary upper atmosphere from harmful solar radiation. Most rocky planets in our solar system display past or present signatures of magnetic activity, and a similar trend might exist in exoplanetary systems. So far, our knowledge on exoplanets relies on their radii and masses, while interior properties remain largely unconstrained. Studying the evolution of exoplanetary magnetic fields and their interaction with the surrounding environment will help constraining interior properties from future atmospheric observations.
+Here, we investigate the structure and the thermal and magnetic evolution of the cores of rocky planets with different masses (0.8-2 Earth masses) and variable bulk and mantle iron contents. We find that the iron content and its internal distribution between a planet's core and mantle strongly affects the evolution of the core and the lifetime of a magnetic field. Despite producing stronger magnetic fields, iron-rich planets tend to grow fully solid cores, thus hindering any further magnetic activity. The presence of a small fraction of light core impurities can help prolong magnetic field lifetimes.
+
+
+%% ------------------------------------------------------------------------ %%
+%
+%  TEXT
+%
+%% ------------------------------------------------------------------------ 
+
+\section{Introduction}
+
+Most of the large rocky bodies in the solar system present evidence of past and/or present magnetic activity \cite{stevenson_magnetism_1983,breuer_thermal_2010,schubert_planetary_2011}, with the potential exception of Venus, for which no current magnetic field has been detected and no record of past activity is available \cite{konopliv_venusian_1996,Nimmo2002,zhang2016weak,Dumoulin2017}. Magnetic fields are generated through the dynamo effect in a large volume of an electrically conducting liquid in the planet's interior.
+Earth's magnetic field has been operating for about 3.45 Gyr \cite{tarduno2010geodynamo} and is thought to be mainly sustained by the crystallisation of its central solid inner core, powering thermo-chemical convection in the liquid outer core by the release of light-element enriched material and latent heat \cite{braginsky1963structure}. The geodynamo is thus the result of the secular cooling of Earth's interior \cite{labrosse_thermal_2003,buffett2003thermal}. In principle, the existence of a magnetic field is considered as evidence for a planet's internal dynamics, as well as for the existence of an electrically conducting layer at depth. While being topic of active debate \cite{moore2007stellar,strangeway2010does,brain2013planetary}, planetary magnetism may also play an important role for the development of habitable surface conditions and their long-term stability of planetary bodies, as it shields the upper atmosphere from mass loss induced by stellar winds and extreme space weather events \cite{dehant2007planetary,lammer2018origin,del2020inner}.
+
+The importance of magnetism for planetary evolution and/or habitability strongly motivates the search and the study of magnetic fields beyond the solar system. To date, more than 4000 planetary candidates have been detected \cite{schneider2011defining,akeson2013nasa}, with many of the bodies lying in the super-Earth regime, comprising planets with masses larger than Earth but smaller than Neptune. Despite the large number of discovered exoplanets, knowledge regarding their internal structure is lacking \cite{spiegel_structure_2014,baraffe2014planetary}, as current observations are limited to providing the planetary radius and/or its (minimum) bulk mass. While inferences on a planet's interior can be drawn to some degree, the internal structures and dynamic patterns matching these two constraints are manifold \cite{rogers2010framework,howe2014mass}. This degeneracy constitutes a major barrier for obtaining unique solutions for planets' interior structures. 
+
+The ability of a planet to sustain habitable surface conditions is, however, strongly linked to its interior structure and dynamics \cite{noack2014can}. The detection and measurement of exoplanetary magnetic fields would help shedding light on the internal structure and dynamics of extra-solar bodies, on the frequency of planetary magnetic fields in the Universe, as well as on the importance of magnetic activity for the emergence of planetary habitability. However, no direct observation of magnetic fields beyond our solar system exists to this date. Such observations remain challenging due to the limited sensitivity of current instrumentation, which is too low to detect the weak magnetic fields exerted by small rocky planets \cite{driscoll_optimal_2011}.
+Upcoming missions aimed at the investigation of exoplanetary atmospheres (e.g., JWST, ARIEL, WFIRST) will enable additional characterization of exoplanetary bodies \cite{gardner2006james,spergel2015wide}. Until then, theoretical modelling can provide a means for understanding and constraining interactions and feedback mechanisms between a planet's interior and its atmosphere. Magnetic fields are well suited for this purpose, as they span a planet in its entirety, being generated in the deepest portion of the interior and manifesting in the upper layers of the atmosphere. 
+
+Past modelling efforts investigating exoplanetary interiors have led to the development of simple scaling laws for deriving the internal structure (core and planetary radii) and dynamic properties (likelihood of plate-tectonics-like behaviour) of super-Earths \cite{valencia_internal_2006,seager_massradius_2007}. These relations often assume a core-mantle boundary (CMB) heat flux proportional to the planetary mass, as well as an Earth-like composition. Scaling laws providing estimates for the magnetic field intensity at the CMB based on the available energy for dynamo generation have been devised as well \cite{olson2006dipole,aubert2009modelling}, and have been extensively used by both the geophysical and the planetary science communities \cite{driscoll_optimal_2011,lopez2011magnetic,mcintyre2019planetary}. 
+\citeA{driscoll_optimal_2011} have considered optimal conditions for dynamo generation in $1-10$~$M_{\rm Earth}$ planets. Such optimal dynamos are driven by vigorous convection in the core due to fast cooling across the CMB and vigorous convection in the mantle. Very recently, \citeA{boujibar2020super} have determined internal structures at the end of accretion for super-Earths with core mass fractions corresponding to Earth, Mars and Mercury. 
+
+The interior structures (e.g., core mass fraction, convective radius in the liquid outer core) of the planets in the studies mentioned above are based on bodies in our solar system (Earth, Mercury, and Mars). However, depending on their mass and composition, planetary bodies can cover a large variety of possible structures and sizes. This diversity is a result of different disk composition \cite{bond2010compositional,moriarty2014chemistry}, accretion processes, and the differentiation history. 
+%\lena{(something from Cayman Unterborn maybe?)} 
+In addition, the distribution of iron between core and mantle, which is strongly tied to accretion and differentiation processes \cite{elkins2008coreless,wohlers2017uranium}, has also strong implications for the final planetary structure, as well as for melting temperatures, viscosity, thermodynamic and transport properties such as electric conductivity, and the resulting dynamics of the mantle and/or core. As a result, different structures and compositions can have important influences on the generated magnetic fields \cite{driscoll_optimal_2011}, and it is thus important to conduct a parameter exploration.  
+
+Here, we investigate the core evolution of bodies with variable masses and iron contents (bulk and mantle), assuming Earth-like mineral assemblages. Starting from their internal structure after the solidification of molten silicates at the CMB \cite{stixrude2014melting,noacklasbleis_2020}, we determine the initial core structure and model its subsequent thermal and magnetic evolution by computing inner core growth, buoyancy fluxes, and the strength and lifetime of the generated magnetic field. The manuscript is structured as follows: In Section \ref{sec:methods} we briefly introduce the interior structure and the mantle evolution model (Section \ref{sec:int_struc}), as well as thermal evolution model for the core (Section~\ref{sec:evolution_model}). We then present the core evolution histories obtained by varying the planetary mass, the bulk and mantle iron contents, and the the amount of light alloying components in the core in Section~\ref{sec:res_evolution}. We further show the calculated magnetic field strengths and lifetimes in Section~\ref{sec:general_trends}. In Section~\ref{sec:discussion} we discuss our results and parameter uncertainties. A summary can be found in Section~\ref{sec:conclusions} together with some concluding remarks.
+
+\section{Methods}\label{sec:methods}
+
+\subsection{Interior structure and mantle evolution model}
+\label{sec:int_struc}
+
+We obtain internal structures from the code CHIC (Code for Habitability, Interior and Crust; \citeA{NOACK201740}) for planets with different masses and variable iron contents, leading to different core mass fractions. The explored planetary mass range lies between $0.8$ and $2$~$M_{\rm Earth}$ (with $M_{\rm Earth}=5.972 \cdot 10^{\rm 24}$~kg being Earth's mass). We employ bulk weight fractions of iron $X_{\mathrm{Fe}}$ between $0.15$ and $0.8$ ($15-80$~wt.\% Fe: as a reference, Earth has an iron content of about $32$~wt.\%), and mantle iron numbers $\# Fe_{\mathrm{M}}$ varying between $0$ and $0.2$ (as a reference, Earth has a mantle iron number $\# Fe_{\mathrm{M}}$ of $0.1$). 
+The mantle iron number is defined as the ratio between iron-bearing (FeO, FeSiO$_{3}$ and Fe$_{2}$, SiO$_{4}$) and magnesium-rich minerals (MgO, MgSiO$_{3}$ and Mg$_{2}$ SiO$_{4}$). The range explored in this study ($\# Fe_{\mathrm{M}}=0-0.2$) corresponds to mantle iron mass fractions $X_{\rm Fe,m}=0-0.1457$ (see also \citeA{noacklasbleis_2020}). The interior structure model solves the hydrostatic, Poisson, and mass equations from the planetary centre up to its surface in order to obtain interior pressure, gravity, and mass profiles. The planetary surface pressure is set to $1$~bar. Using the planetary mass and the iron contents $X_{\rm Fe}$ and $\# Fe_{\rm M}$ as inputs, the model determines the planetary structure (core and planetary radius), and the thermodynamic parameter profiles self-consistently. 
+
+The model assumes an Earth-like mantle mineralogy (Mg, Fe, Si, and O) and phase transitions, with a mantle consisting of (Mg$_{1-\#Fe_{\rm M}}$, Fe$_{\# Fe_{\rm M}}$)O and SiO$_{\rm 2}$. Even though some exoplanets might be rich in other elements (e.g., aluminium, calcium, carbon) and display completely different chemistries \cite{kuchner2005extrasolar,dorn2019new}, it is likely for planetary building blocks located inside the snow line to have mineralogies similar to planets in the inner solar system, with slight variations in the Mg, Fe, and Si contents depending on the host star's metallicity \cite{bitsch2020influence}. A third-order Birch-Murnaghan \cite{stixrude2009thermodynamics} and a Holzapfel \cite{bouchet2013ab} equations of state are used for the mantle and the core (pure iron), respectively. Interior structures of planets with masses beyond $2$~$M_{\rm Earth}$ are not explored, as the employed equations of state are devised for Earth's pressure range, and an extrapolation to higher pressures would lead to errors due to missing data from experiments and ab initio simulations. We therefore set the upper planetary mass limit to $2$~$M_{\rm Earth}$, for which we have robust equations of state for both mantle and core that we can employ \cite{hakim2018new}. For more details about the interior structure model, the reader is redirected to the papers by \citeA{NOACK201740}, and to \citeA{noacklasbleis_2020} for parameterizations of interior properties of massive rocky planets.
+
+\subsubsection{Thermal profiles of the core}\label{sec:profiles}
+
+Recent studies have stressed the importance of both the initial structure and the thermal profile of a planet, as they set the stage for its subsequent evolution and tectonic behaviour \cite{stein2004effect,breuer_thermal_2010,stamenkovic2012influence,stamenkovic2014tectonic,ONEILL201680,dorn_outgassing_2018}. Estimating the energy budget of bodies during and in the aftermath of accretion is challenging, even for planets in the solar system due to the many unconstrained thermodynamic and transport parameters. Here, we use initial temperature profiles corresponding to the 'hot' scenarios in \citeA{noacklasbleis_2020}. These are high temperature end-members of the profiles in \citeA{stixrude2014melting}, determined for planets with an Earth-like composition and variable mass. These profiles describe planets at the late stage of planet formation, right after the full crystallisation of the silicates at the CMB. This solidified material is a portion of a (global) magma ocean, which is likely to be present in the aftermath of accretion \cite{abe1997thermal,canup2004dynamics,nakajima2015melting}. Typically, solidification of such a magma ocean proceeds from the bottom of the mantle towards the surface \cite{andrault2011solidus,monteux2016cooling}, but middle-out crystallisation processes potentially leading to the preservation of a basal magma ocean for billions of years have been proposed as well \cite{labrosse2007crystallizing,stixrude2009thermodynamics,nomura2011spin}.
+
+\subsubsection{Melting curves and inner core size}\label{sec:tmelt}
+We use formulations for melting curves for iron and rock components in super-Earths interiors, which were proposed in \citeA{stixrude2014melting} based on existing experimental results, ab initio data, and scaling laws. The melting temperature of the mantle for pressures $P>17$~GPa is defined as
+\begin{linenomath*}
+\begin{equation}
+T_{\rm m,mantle} = 5400  \left (\frac{P}{140\cdot 10^{\rm 9}}\right )^{0.48} \frac{1}{1 - \ln(1-\#Fe_{\rm M}-X_{\rm M}) }.
+\end{equation}
+\end{linenomath*}
+with pressure $P$ in Pascal and temperature $T$ in Kelvin. 
+$X_{\rm M}$ is the difference between liquidus and solidus temperatures. As stated previously, the mantle iron number $\# Fe_{\rm M}$ defines the ratio between iron and magnesium-bearing minerals present in the mantle, which are assumed to be similar to Earth. An increase of $\# Fe_{\rm M}$ exerts an effect similar to the light elements in the core and leads to a reduction of the mantle melting temperature $T_{\rm m, mantle}$ \cite{dorn_outgassing_2018}. Similarly, the mantle melting temperature decreases with variations in the mantle composition, which is reflected with the parameter $X_{\rm M}$. Earth's current mantle melting temperature is best matched with $\# Fe_{\rm M}$=0.1 and $X_{\rm M}$=0.11 \cite{stixrude2014melting}, and which we refer to as warm profile (mimicking the solidus melting temperature of the mantle). The case with $X_{\rm M}$=0 is referred to as hot profile (mimicking the liquidus melting temperature of the mantle).
+
+The melting temperature for pure iron in \citeA{stixrude2014melting} is based on \citeA{morard2011melting}, and is defined as
+\begin{linenomath*}
+\begin{equation}
+\label{eq:Tmelt}
+T_{\rm m,core} = 6500  \left (\frac{P}{340\cdot 10^{\rm 9}}\right)^{0.515} \frac{1}{1 - \ln(1-x) },
+\end{equation}
+\end{linenomath*}
+where $P$ is the pressure (in Pa) and $x$ is the mole fraction of light components in the core. The x dependence in Equation~(\ref{eq:Tmelt}) reflects the reduction of the core melting temperature due to the presence of light elements. Earth's outer core is thought to contain about $5-10\%$ of light elements, which were imparted during accretion and core formation \cite{wood2006accretion,rubie2011heterogeneous,badro_core_2015}. The presence of light elements in Earth's core compensates for the temperature jump at the inner core boundary (ICB), which does not correspond to a pure phase change \cite{hirose2013composition,badro_core_2015}. Although the identity of these components remains elusive, seismology and mineral physics studies have proposed oxygen, silicon, sulfur, carbon, and hydrogen  as potential candidates \cite{hirose2013composition}. Light elements could be present in the cores of massive exoplanets with masses up to $2$~$M_{\rm Earth}$ as well, although likely candidates and their partitioning properties at such high pressures are so far unknown, and need further investigation. For this study, we vary the core light element content between $0$ and $10$\%, and assume that light components are preferentially partitioned into the liquid outer core during evolution.
+
+The employed melting temperatures for the mantle and the core are shown together with the thermal profiles (see Section~\ref{sec:profiles}) in Figure~\ref{fig:temp_profiles}, for planets of $1$ and $2$ $M_{\rm Earth}$ with variable bulk iron contents $X_{\rm Fe}$ (30 wt.\% and 60 wt.\%) and mantle iron numbers $\#Fe_{\rm M}$ ($0$ and $0.1$). The mantle and core melting temperatures are reduced with the addition of iron and light impurities, respectively. The thermal profiles are high temperature end-member scenarios of the ones in \citeA{stixrude2014melting} and imply a hot core, where the uppermost core temperature is anchored to the mantle liquidus that varies according to the mantle iron content. The temperature jump at the CMB is calculated for every planet depending on its internal structure and thermodynamic parameters (see \citeA{noacklasbleis_2020} for further details).
+
+\begin{figure}[t]
+\includegraphics[width=0.8\textwidth]{fig/temp_profile_alt.pdf}
+\caption{Initial temperature profiles for planets with masses of $1$ and $2$~$M_{\rm Earth}$, bulk iron contents $X_{\rm Fe}$ of $30$~wt.\% and $60$~wt.\%, and mantle iron numbers $\#Fe_{\rm M}$ of $0$ and $0.1$. The purple and red solid curves display mantle liquidus curves for different mantle iron numbers ($\#Fe_{\rm M}$ of $0$ and $0.1$) and core liquidus curves for different core compositions (a pure iron core and a core containing iron and $5$\% of light elements), respectively. All profiles are consistent with the 'hot' scenario \cite{noacklasbleis_2020}, following which the temperature at the CMB is anchored to the mantle liquidus at that pressure.}
+\label{fig:temp_profiles}
+\end{figure}
+
+\subsubsection{Polynomial fitting of interior profiles}
+
+\citeA{noacklasbleis_2020} provided a suite of parameterizations for average thermodynamic parameters in both the mantle and the core. In order to model the evolution of the metallic core, we need its pressure-dependent density profile. Following the work of \citeA{labrosse_thermal_2015} of fitting the Preliminary Reference Earth Model (PREM) for the Earth, we fit the initial interior profiles obtained using the model described in Section~\ref{sec:int_struc}. The core density is fitted using a polynomial function with three parameters: the density at the planetary centre $\rho_{\mathrm{0}}$, the typical length scale for density variations $L_{\mathrm{\rho}}$, and a second-order variation $A_{\mathrm{\rho}}$ as
+
+\begin{linenomath*}
+\begin{equation}\label{eq:density}
+    \rho(r) = \rho_{\mathrm{0}}\left ( 1-\frac{r^2}{L_{\mathrm{\rho}} ^2} - A_{\mathrm{\rho}} \frac{r^4}{L_{\mathrm{\rho}}^4}\right )
+\end{equation}
+\end{linenomath*}
+
+with
+
+\begin{linenomath*}
+\begin{equation}
+	L_{\mathrm{\rho}}=\sqrt{\frac{3 K_{\mathrm{0}}}{2 \pi G \rho_{\mathrm{0}}^{2}}} ; \quad A_{\mathrm{\rho}}=\frac{5 K_{\mathrm{0}}^{\prime}-13}{10},
+\end{equation}
+\end{linenomath*}
+
+where $K=K_{\mathrm{0}}+K_{\mathrm{0}}^{\prime}(P-P_{\rm 0})$ is  the bulk modulus, which is considered pressure-dependent and is anchored at the planetary centre (labelled by the subscript $0$), and $G$ is the gravitational constant ($G=6.67430\cdot 10^{\rm -11}$ m\textsuperscript{3} kg\textsuperscript{-1} s\textsuperscript{-2}). $P_{\mathrm{0}}$ and $K_{\mathrm{0}}^{\prime}$  are the pressure and the pressure derivative of the bulk modulus at the planetary centre, respectively.
+
+Integrating the gravity using Gauss' theorem and assuming the system is in hydrostatic equilibrium, the gravity and pressure profiles $g(r)$ and $P(r)$ are
+\begin{linenomath*}
+\begin{equation}\label{eq:gravity}
+    g(r) = \frac{4\pi}{3}G\rho_{\mathrm{0}} r \left ( 1-\frac{3}{5}\frac{r^2}{L_{\mathrm{\rho}} ^2} - \frac{3A_{\mathrm{\rho}}}{7} \frac{r^4}{L_{\mathrm{\rho}}^4}\right ),
+\end{equation}
+\end{linenomath*}
+\begin{linenomath*}
+\begin{equation}\label{eq:pressure}
+    P(r) = P_{\mathrm{0}} - K_{\mathrm{0}}\left ( \frac{r^2}{L_{\mathrm{\rho}} ^2} - \frac{4}{5} \frac{r^4}{L_{\mathrm{\rho}}^4}\right ).
+\end{equation}
+\end{linenomath*}
+ $K_{\mathrm{0}}$ is calculated as 
+\begin{linenomath*}
+\begin{equation}
+    K_{\mathrm{0}} = \frac{2}{3}\pi L_{\mathrm{\rho}}^2\rho_{\mathrm{0}}^2 G. 
+\end{equation}
+\end{linenomath*}
+
+We assume that the core density does not evolve with time, although light elements are expelled into the liquid phase as a solid inner core grows. As a result, we neglect both the thermal and chemical dependence of the density compared to the one related to pressure variations. The temperature profile $T(r)$ is assumed to be isentropic, that is, with $\gamma$ being the Gr\"uneisen parameter,
+\begin{linenomath*}
+\begin{equation}
+    \left ( \frac{\partial T}{\partial \rho}\right ) _{\mathrm{S}} = \gamma.
+\end{equation}
+\end{linenomath*}
+
+Anchoring this temperature profile to the radius $r_{\mathrm{0}}$ with density $\rho(r_{\mathrm{0}})$, and assuming a constant $\gamma$ (obtained by averaging the Gr\"uneisen parameter over the volume of the fully liquid outer core), the temperature profile is given by
+
+\begin{linenomath*}
+\begin{equation}\label{eq:adiabat}
+    T(r) = T(r_{\mathrm{0}})\left ( \frac{\rho(r)}{\rho(r_{\mathrm{0}})} \right )^\gamma .
+\end{equation}
+\end{linenomath*}
+
+The radius $r_{\mathrm{0}}$ is chosen as either the planetary centre (i.e., $r_{\mathrm{0}}=0$) when there is (still) no inner core, or the inner core radius $r_{\mathrm{IC}}$ once the inner core starts forming (see Section~\ref{sec:evolution_model} for more details).
+
+
+\subsubsection{Mantle thermal evolution model} \label{sec:evolution_mantle}
+
+Starting from the temperature profiles as depicted in Figure~\ref{fig:temp_profiles}, based on \citeA{noacklasbleis_2020}, we simulate the long-term thermal evolution of the mantle over 5~Gyr. Based on the heat loss from mantle to surface by both convection and conductive heat flow, we can estimate how strong the core cools over time, and finally, how the heat flux at the CMB varies over time.
+Estimating the evolution of the heat flow at a planet's CMB is challenging. For the Earth, estimates of the present CMB heat flow range between $\sim 5-17$~TW \cite{lay2008core}, and its lateral variation and evolution remain unclear. As a result, past work has assumed either a constant CMB heat flow over the entirety of a planet's evolution \cite{labrosse_thermal_2003}, or a CMB heat flow following an exponentially decaying curve \cite{labrosse_thermal_2015}. However, time-dependent reversal frequency excludes both, meaning that an oscillatory CMB heat flux is needed. 
+
+Here, we employ the mantle convection code CHIC \cite{NOACK201740} to obtain the CMB heat flow for planets of different mass and iron contents (bulk and mantle). The model solves the conservation equations for mass, momentum, and energy in a 2-D quarter sphere using the spherical annulus geometry \cite{hernlund2008modeling}, which is able to reproduce thermal evolution scenarios similarly to a 3-D sphere while using much less computational power. We model compressional convection under the truncated anelastic liquid approximation (TALA), where thermodynamic reference profiles for parameters such as density, thermal expansion coefficient and heat capacity are calculated as described in \citeA{noacklasbleis_2020}.  
+During the evolution, radiogenic elements heat up the mantle, which decay over time and are assumed to start with Earth-like concentrations \cite{mcdonough1995composition}. 
+
+The mantle is also heated from below due to core cooling. The heat flux of the core mantle boundary is here determined only from the mantle side, assuming that the thick thermal boundary forming at the bottom of the mantle dominates how much heat is taken up into the mantle, and therefore controls the heat loss from the core. In the mantle evolution simulations, the core is otherwise not considered, i.e. no energy contribution from freezing of the core (latent heat or gravitational energy release) is considered.
+The obtained CMB heat flow is then used to \textit{a posteriori} compute the energy inputs resulting from secular cooling, latent heat, and gravitational heat release (Equation~(\ref{eq:en_bal})) at different stages of evolution, but is not taken into account for the mantle evolution simulations. We do consider, however, melt formation in the upper mantle, which has a direct impact on the thermal evolution of the mantle due to latent heat consumption upon melting. We assume that melt is then delivered instantaneously to the surface, leading to a net loss of thermal energy over time. Another factor that impacts the thermal evolution of the mantle is the viscosity of the silicate rocks, which we assume here to be dry but otherwise Earth-like \cite{NOACK201740}, using the viscosity laws from \citeA{KaWu93} for the upper mantle and \citeA{Tack13} for the lower mantle. For the latter, it should be noted that the viscosity in \citeA{Tack13} was taken to be two orders of magnitude higher than realistic to allow for faster convection simulation, which we did not include here to better mimic the lower mantle rheology for Earth-like materials. 
+In this study we were not particularly interested in local convective features but rather the general, long-term thermal evolution of the mantle. We therefore used a coarse radial resolution of 50 km, with in average similar lateral resolution (but varying with radius due to the spherical shape of the mantle) to save computational costs. In \citeA{dorn_outgassing_2018} we could already show that the mantle resolution (there going down to a radial resolution of 10 km) does not have a strong effect on the thermal evolution of the mantle.
+
+The modelled planets are in a stagnant lid tectonic configuration, featuring a unique rigid plate that does not break up and sink into the mantle in a subduction-like manner. While cooling of the mantle due to melting is taken into account, we do not model that due to eruption of magma to the surface, the colder lithosphere would sink further down into the mantle, hence additionally cooling the mantle (as suggested in the so-called heat-pipe model \cite{moore2013heat}. Furthermore, if plate tectonics would be considered, subduction of the cooler lithosphere into the mantle would lead to an additional cooling of the mantle, triggering higher heat fluxes at the CMB than modelled here. However, it is yet unclear how likely plate tectonics is on rocky planets, as Earth is the only rocky body we know of so far that experiences plate tectonics (though speculations exist for our sister planet Venus). Furthermore, \citeA{stamenkovic2012influence} could show that at least for super-Earths, the heat flux at the CMB is not affected by the surface mobilisation regime, since a strong cooling of the upper mantle leads to a decoupling of the upper and lower pat of the mantle, leading to similar long-term heat flux patterns at the CMB. For this reason we limit our study here to stagnant-lid planets.
+
+
+\subsection{Core evolution model}\label{sec:evolution_model}
+
+\subsubsection{Energy balance}
+
+Starting from the initial profiles described in Section~\ref{sec:int_struc}, we model the subsequent thermal and magnetic evolution of the core for planets of different mass and iron contents (bulk and mantle). To do this, we design a 1-D parameterized model tracking inner core growth and calculating the core energy budget, the buoyancy fluxes, and the magnetic dipole moment. This is performed using an energy balance approach, which has been extensively used in past studies investigating the geodynamo \cite{gubbins1977energetics,lister1995strength,braginsky1995equations,nimmo2007energetics,labrosse_thermal_2003}. The main concept behind energy balance models is that the heat flow at the CMB, $Q_{\rm CMB}$, is equal to the sum of the secular cooling of the outer core $Q_{\rm C}$, the latent heat from freezing of the inner core $Q_{\rm L}$, the gravitational heat due to the light element release at the ICB $Q_{\rm G}$, and heat generated from radioactive decay $Q_{\rm R}$ (see Figure~\ref{fig:rIC_sketch}) as 
+
+\begin{linenomath*}
+\begin{equation}
+\label{eq:en_bal}
+Q_{\rm CMB}=Q_{\rm C}+Q_{\rm L}+Q_{\rm G} + Q_{\rm R}
+\end{equation}
+\end{linenomath*}
+
+We assume that the heat produced by radioactive decay $Q_{\rm R}$ is negligible, as is often done for Earth. The model is run for $5$~Gyr of a planet's evolution, which is a reasonable time interval given current distributions of stellar ages \cite{frank2014radiogenic,safonova2016age}. 
+
+\subsubsection{Before crystallisation of an inner core} \label{sec:no_ic}
+
+In the absence of an (initial) inner core, and neglecting the heat produced by radioactive decay, the energy balance before inner core crystallisation can be simply expressed as $Q_{\mathrm{CMB}} = Q_{\mathrm{C}}$, where the secular cooling $Q_{\mathrm{C}}$ is defined as
+
+\begin{linenomath*}
+\begin{equation}
+Q_{\rm C} = -\int _{V_{\rm C}} \rho C_{\rm P} \frac{\partial T_{\rm a}}{\partial t} \rm{d}V.
+\end{equation}
+\end{linenomath*}
+
+Here, $V_{\rm C}$ is the volume of the core, $C_{\rm P}$ is the specific heat capacity of the core, $T_{\rm a}$ is the adiabatic temperature, and $t$ is time. The adiabatic temperature profile is defined as in Equation~(\ref{eq:adiabat}), and is anchored at the planetary centre $r_{\mathrm{0}}=0$ with density $\rho_{\mathrm{0}}$, as
+
+\begin{linenomath*}
+\begin{equation}
+T_{\rm a}(r, t)=T_{\mathrm{0}}(t) \left ( 1-\frac{r^2}{L_{\mathrm{\rho}} ^2}-A_{\mathrm{\rho}} \frac{r^4}{L_{\mathrm{\rho}}^4}\right )^{\gamma},
+\end{equation}
+\end{linenomath*}
+where $T_{\mathrm{0}}$ is the temperature at the centre. $Q_{\mathrm{C}}$ then becomes
+
+\begin{linenomath*}
+\begin{equation}
+Q_{\mathrm{C}} = - 4 \pi C_{\mathrm{p}}\frac{\rm{d}T_{\mathrm{0}}}{\rm{d}t}\int_0^{r_{\mathrm{OC}}}  \left( 1-\frac{r^2}{L_{\mathrm{\rho}}^2}-A_{\mathrm{\rho}} \frac{r^4}{L_{\mathrm{\rho}}^4}\right)^{\gamma+1} r^2\rm{d}r.
+\end{equation}
+\end{linenomath*}
+
+The integral can either be approximated numerically, or by applying the development described in Eq.~A2 in \citeA{labrosse_thermal_2015}. We introduce the notation 
+\begin{linenomath*}
+\begin{equation}
+f_{\mathrm{C}}(r,\delta) = 3\int_{\mathrm{0}}^r(1-r^2-A_{\mathrm{\rho}} r^4)^{1+\delta}r^2 \rm{d}r, 
+\end{equation}
+\end{linenomath*}
+so that the secular cooling term can be written as 
+\begin{linenomath*}
+\begin{equation}
+Q_{\rm C} =  - \frac{4}{3} \pi C_{\mathrm{P}}\rho_{\mathrm{0}} L_{\mathrm{\rho}} ^3 f_{\mathrm{C}}\left ( \frac{r_{\mathrm{OC}}}{L_{\mathrm{\rho}}},\gamma\right)\frac{\rm{d}T_{\rm 0}}{\rm{d}t}.
+\end{equation}
+\end{linenomath*}
+
+$Q_{\mathrm{C}}$ can be rewritten as $Q_{\mathrm{C}}=\mathrm{P}_{\mathrm{C}} \frac{d T_{\mathrm{0}}}{d t}$, where $\mathrm{P}_{\mathrm{C}}$ is a constant which depends on the global parameters of the core and does not vary with time. The temperature at the centre can finally be written as
+\begin{linenomath*}
+\begin{equation}
+T_{\mathrm{0}}(t) = T_{\mathrm{0}}(t=0)+\frac{1}{P_{\mathrm{C}}}\int_0 ^t Q_{\mathrm{CMB}}(\tau)\rm{d\tau}.
+\end{equation}
+\end{linenomath*}
+
+Here, $Q_{\rm CMB}$ is the CMB heat flux obtained from the model of \citeA{NOACK201740}. The onset of inner core crystallisation is assumed to happen when the temperature at the planetary centre reaches the liquidus temperature of the outer core alloy, neglecting the possible existence of a supercooling effect \cite{huguet2018earth}.
+
+\subsubsection{After crystallisation of an inner core}
+
+In addition to the secular cooling term, the energy balance after the onset of inner core solidification needs to account for latent and gravitational heat release (Equation~(\ref{eq:en_bal})). These terms can be written as
+\begin{linenomath*}
+\begin{equation} \label{eq:sec_cooling_IC}
+{\mathrm{Q}_{\mathrm{C}}=-\int_{V_{\mathrm{OC}}} \rho C_{\mathrm{P}} \frac{\partial T_{\mathrm{a}}}{\partial t} \mathrm{d} V},
+\end{equation}
+\begin{equation} \label{eq:lat_heat}
+	{Q_{\mathrm{L}}=4 \pi r_{\mathrm{IC}}^{2} \rho\left(r_{\mathrm{IC}}\right) T_{\mathrm{m,core}}\left(r_{\mathrm{IC}}\right) \Delta S \frac{\mathrm{d} r_{\mathrm{IC}}}{\mathrm{d} t}},
+\end{equation}
+\begin{equation} \label{eq:grav_heat}
+	{Q_{\rm G}=-\int_{V_{\rm OC}} \rho \mu^{\prime} \frac{\partial X}{\partial t} \mathrm{d} V}.
+\end{equation}
+\end{linenomath*}
+Here, $V_{\rm OC}$ is the volume of the outer core, $T_{\rm m,core}(r_{\rm IC})$ and $\rho(r_{\rm IC})$ are the melting temperature and the density at the ICB, $\Delta S$ is the entropy of freezing (set to $127$~Jkg\textsuperscript{-1}K\textsuperscript{-1}; \citeA{hirose2013composition}), $\mu^{\prime}$ is the difference between the adiabatic and the chemical potentials at the ICB (see \citeA{labrosse_thermal_2015} for a more detailed derivation), and $\frac{\partial X}{\partial t}$ is the temporal change of light element mass fraction in the outer core. We calculate the melting temperature of the outer core alloy at the inner core radius $r_{\rm IC}(t)$ according to Equation~(\ref{eq:Tmelt}), in order to obtain the temperature change at the ICB. The temperature at the CMB is assumed to lie on the adiabatic profile, which is consistent with vigorous convection. 
+
+Similar to what was previously shown for a planet with no inner core (Section~\ref{sec:no_ic}), we can write each of the terms in Equations~(\ref{eq:sec_cooling_IC}), ~(\ref{eq:lat_heat}), and ~(\ref{eq:grav_heat}) as $Q_{\rm X}=\mathrm{P}_{\rm X}\frac{\rm{d}r_{\rm IC}}{\rm{d}t}$, where $X$ indicates a given heat contribution (secular cooling, latent heat or gravitational heat). We write these terms similarly as in \citeA{labrosse_thermal_2015}, and redirect the reader to the Appendix of that study for further details.  
+
+\subsection{Change of outer core composition}
+
+If the core contains light elements, its composition will evolve as the inner core solidifies, as a result of the gradual release of such impurities. Seismic velocity anomalies in Earth's core hint to the presence of $~5-10\%$ light components \cite{hirose2013composition,badro_core_2015}, candidates of which are oxygen, silicon, sulfur, carbon, and hydrogen \cite{poirier1994light}. While their abundance and identity is unknown, it is not implausible for such impurities to be present in the cores of massive exoplanets.
+
+Here we use light element bulk contents ranging between $0-10$\%. Depending on whether there is an inner core or not, the inventory of light elements in the outer core will differ, and is larger for bodies featuring larger solid inner cores. With $M_{\rm OC}(t)$ being the mass of the outer core and $X_{\rm 0}$ being the bulk fraction of light elements in the outer core in the absence of an inner core, we can obtain the fraction of light elements in the outer core as a function of time $X(t)$ by assuming that no light components enter the solid as
+\begin{linenomath*}
+\begin{equation}
+X(t) = \frac{X_{\rm 0} M_{\rm C}}{M_{\rm OC}(t)}, 
+\end{equation}
+and the mass of the outer core is subsequently calculated as 
+\begin{equation}
+ M_{\rm OC}(t) = 4 \pi   \int^{r_{\rm OC}}_{r_{\rm IC}(t)} \rho(x) x^2 {\rm d}x = \frac{4}{3}\pi \rho_0 L_\rho^3\left [ f_C\left ( \frac{r_{\rm OC}}{L_\rho}\right  ) -  f_{\rm C}\left (\frac{r_{\rm IC}(t)}{L_\rho}\right  )\right ].
+\end{equation}
+\end{linenomath*}
+Therefore, if an inner core starts forming, the fraction of light elements in the outer core as a function of time will increase accordingly. As the outer core becomes gradually enriched in light elements, its composition shifts towards eutectic point in the phase diagram. In case of a binary core composition, the melting point depression by light elements corresponding to the attainment of the eutectic point can be as low as $200$~K (Fe-Si at 65~GPa and Fe-O at 50~GPa; \citeA{kuwayama2004phase,seagle2008melting}) or $1500$~K (Fe-S at 65~GPa; \citeA{morard2008situ}). Similar to what proposed in \citeA{morard2011melting}, we limit the melting point depression by light impurities to a maximum $\Delta T_{\rm melt,core}=1500$~K. This means that as soon as the melting point depression exerted by the presence of light components becomes higher than this threshold, the light element abundance in the outer core is anchored to a pressure-dependent "eutectic" value, for which the temperature reduction is exactly $\Delta T_{\rm melt,core}=1500$~K. During the subsequent evolution stages the light element content in the outer core still increases, albeit less strongly, due to the varying ICB pressure. An additional effect that rises upon reaching the eutectic is that the compositions of the inner and outer core are equal, and the density jump at the ICB goes to zero. This effect is taken into account, as it can shut off magnetic activity if thermal buoyancy is not strong enough. 
+
+\subsection{Buoyancy fluxes}\label{sec:buoyancy_fluxes}
+
+Displacements of liquid in planetary cores result from both variations in their thermal and chemical structure. Thermally-driven dynamos are generated by a strong, superadiabatic, flux of heat at the CMB. Such a mechanism is thought to act predominantly in the early evolution stages of a planet, when the core is very hot and releases a large amount of heat into the mantle \cite{del2020inner}. On the other hand, chemically-driven dynamos may start taking place later in time, once/if a solid inner core starts crystallising. In this scenario, density difference between the liquid and solid metal at the ICB, resulting from the expulsion of light elements in the outer core, can supply substantial energy to drive dynamo activity \cite{braginsky1963structure}. Alternatively, snow mechanisms such as the rise of alloy-rich material \cite{braginsky1963structure} or the settling of solid iron through a stably stratified layer \cite{hauck2006sulfur,ruckriemen2018top} located in the immediate proximity of the ICB could provide another source of buoyancy for core convection.  
+
+Here, we consider both contributions from thermal and chemical anomalies. As a result, the buoyancy flux is expressed as the sum of the thermal and the chemical buoyancy fluxes $F_{\rm T}$ and $F_{\rm X}$. Following \citeA{driscoll_optimal_2011} we calculate these as
+\begin{linenomath*}
+\begin{equation}
+    F_{\rm T} = \frac{\alpha g}{\rho C_{\rm P}}q_{\rm c,conv}
+\end{equation}
+\end{linenomath*}
+\begin{linenomath*}
+\begin{equation}   
+    F_{\rm X} = \frac{g_{\rm ICB} \Delta \rho_{ICB}}{\rho}\left(\frac{r_{\rm IC}}{r_{\rm OC}}\right)^{\rm 2} \frac{\rm{d}r_{IC}}{\rm{d}t},
+\label{eq:chem_buoyancy}
+\end{equation}
+\end{linenomath*}
+where $\alpha$ is the thermal expansion coefficient, $r_IC$ is the inner core radius, and $q_{\rm c, conv}=q_{\rm CMB} - q_{\rm c,ad}$ is the convective heat flux at the CMB, defined as the difference between CMB and adiabatic heat flux. $g_{\rm ICB}$ is the gravity at the ICB and $\rm{d}r_{IC}/\rm{d}t$ is the inner core growth rate. $\Delta \rho_{\rm ICB}$ is the density jump at the ICB and is calculated using the relation $\Delta \rho_{\rm ICB} = (\Delta \rho_{\rm ICB,Earth}/{X_{\rm Earth}})X_{\rm planet}$, with $\Delta \rho_{\rm ICB, Earth}=600$~kg.m\textsuperscript{-3} the density jump at Earth's ICB and $X_{\rm Earth} = 11\%$ is an estimate of Earth's light element content according to the melting temperature used in this study for which the main core component (iron) constitutes $89\%$ of the core. Earth's density jump at the ICB has been determined with two types of seismic data, namely short-period body waves ($\Delta \rho_{\rm ICB}\sim 520-1100$~kg.m\textsuperscript{-3}; \citeA{koper2004observations,tkalvcic2009inner}) and long-period normal modes ($\Delta \rho_{\rm ICB}\sim 820 \pm 180$~kg.m\textsuperscript{-3}; \citeA{masters2003resolution}). There is strong uncertainty in the estimates, due to differences in the resolution and accuracy of the techniques, sampling techniques, and data processing. Before an inner core starts forming (and/or in the absence of light components), only temperature changes contribute to buoyancy.
+
+The adiabatic heat flux is defined as
+\begin{linenomath*}
+\begin{equation}
+\label{eq:ad_flux}
+    q_{\rm c, a d}=k_{\rm c} T_{\rm CMB} r_{\rm OC} / D_{\rm ad}^{2},
+\end{equation}
+\end{linenomath*}
+where $k_{\rm c}$ is the thermal conductivity of the core and $T_{\rm CMB}$ is the temperature at the CMB, which lies on the adiabat. The thermal conductivity determines how fast heat is conducted through the core into the mantle. Estimates for the thermal conductivity of Earth's core span values between $\sim 20$ \cite{konopkova2016direct} and $\sim 160$~W.m\textsuperscript{-1}.K\textsuperscript{-1} \cite{gomi2013high}, with dramatic implication for the lifetime of the magnetic field \cite{labrosse_thermal_2015}. As it is very difficult for high-pressure experiments to attain the pressure range governing the cores of such bodies, thermal conductivities of massive exoplanets are currently not known. However, it is expected that the thermal conductivity of a planet increases with increasing pressure. We therefore use a high thermal conductivity $k_{\rm c}=150$~W.m\textsuperscript{-1}.K\textsuperscript{-1} lying in the upper range of Earth's values, in order to obtain conservative estimates for the magnetic field lifetime. We acknowledge, however, that thermal conductivities of super- Earths could reach even higher values, which may affect our results. In the Discussion (Section~\ref{sec:therm_cond}) we will present how our results vary when employing different thermal conductivities. $D_{\rm ad}$ is an adiabatic length scale \cite{labrosse2001age} and amounts to $D_{\rm ad}\sim 6000$~km for Earth \cite{labrosse_thermal_2003}. We calculate $D_{\rm ad}$ for a given planet as $D_{\rm ad}=\sqrt{3 C_{\rm P} / 2 \pi \alpha_{\rm 0} \rho_{\mathrm{0}} G}$. 
+
+\subsection{Magnetic field}\label{sec:methods_MF}
+
+We calculate the magnetic moment $m$ of a given rocky planet by using the scaling law proposed by \citeA{olson2006dipole} as
+\begin{linenomath*} 
+\begin{equation}
+	m \simeq 4 \pi r_{\mathrm{OC}}^{3} \beta \left(\rho / \mu_{\mathrm{0}}\right)^{1 / 2}((F_{\rm T}+F_{\rm X}) (r_{\rm OC}-r_{\rm IC}))^{1 / 3},
+\label{eq:magn_moment}
+\end{equation}
+\end{linenomath*}
+where $\beta$ is a saturation constant for fast rotating dynamos ($\beta = $ 0.2), $\mu_{\mathrm{0}} = 4 \pi \cdot 10^{-7}$~Hm\textsuperscript{-1} is the magnetic permeability. Here, $r_{\rm OC}-r_{\rm IC}$ represents the thickness of the convective shell (i.e., the thickness of the liquid outer core). This quantity is obtained from the core evolution model, and becomes smaller as a solid inner core grows. The buoyancy fluxes $F_{\rm T}$ and $F_{\rm X}$ arising from thermal and chemical anomalies, respectively, are calculated from the core evolution model as well, as described in Section \ref{sec:buoyancy_fluxes}.
+
+Equation~(\ref{eq:magn_moment}) assumes that the magnetic field is dipolar, although we do not exclude that different magnetic field morphologies might be present or arise during evolution, especially for bodies featuring large inner cores and thin convective liquid metal shells. Furthermore, this expression is devised for magnetic fields that are powered by convection in a liquid outer core, although it has recently been suggested that super-Earths can have magnetic fields that are generated inside their mantles instead \cite{soubiran_electrical_2018}, where iron-bearing minerals can gain metallic properties. In the present study, we will not consider such a process. 
+
+For a self-sustaining dynamo action to be viable, the magnetic Reynolds number $R_{\rm m} =v(r_{\rm OC}-r_{\rm IC})/\eta_{\rm m}$, where $v$ is the typical flow velocity and $\eta_{\rm m}$ is the magnetic diffusivity, needs to be higher than a critical value $R_{\rm m,crit}=40$, as suggested by numerical dynamo simulations \cite{christensen2006scaling,roberts2015theory}. The typical velocity of the convective flow $v$ in the outer core is calculated using the scaling relation by \citeA{olson2006dipole} 
+\begin{linenomath*} 
+\begin{equation}
+    v \simeq 1.3((r_{\rm OC}-r_{\rm IC}) / \Omega)^{1 / 5} (F_{\rm T}+F_{\rm X})^{2 / 5},
+\end{equation}
+\end{linenomath*}
+where $\Omega$ is the rotation rate, which is assumed for simplicity to be the one of Earth ($\Omega = 7.29 \cdot 10^{\rm -5}$~rad.s\textsuperscript{-1}). All cases addressed in this study feature super-critical conditions for dynamo action at the beginning of the evolution and a high magnetic Reynolds number. A magnetic field shuts off if the inner core grows up to the outer core radius (see Section \ref{sec:large_IC}), if the convective velocity $v$ is too low, or if the CMB heat flow is lower the heat conducted along the adiabat in the absence of inner core growth (chemical dynamos are viable otherwise). We define the lifetime of the magnetic field as the time interval in a planet's history during which the magnetic moment is non-zero. We do not consider sporadic field reactivations in the aftermath of the magnetic field shutting off in our lifetime calculations.
+
+\section{Results} \label{sec:results}
+
+\subsection{Initial core structures}\label{sec:res_structure}
+Hereafter we present results for core structures at the end of accretion, after the crystallisation of the silicates at the CMB. These are calculated using the model CHIC, described in Section~\ref{sec:int_struc}.
+
+Figure~\ref{fig:rIC_sketch} shows internal structures (solid inner core, liquid outer core, silicate mantle) for planets of different mass and iron contents in the aftermath of accretion. It can clearly be seen that planets with higher bulk and mantle iron inventories feature larger cores and solid inner cores, which can even result in mostly or fully solid cores. Such large inner cores are a result of the increased internal pressures and densities of iron-rich planets, which raise the core melting temperature $T_{\rm m, core}$ (Equation~(\ref{eq:Tmelt})). Note that even though inner (and outer) core sizes increase for larger bulk iron inventories, planetary radii are smaller because of the higher core mass fraction, as shown in Figure~\ref{fig:rIC_sketch}. The size of the solid inner core corresponds to the radius at which the temperature matches the core melting temperature in Equation~(\ref{eq:Tmelt}), calculated for a given pressure range and light element content $x$. Figure~\ref{fig:rIC} shows the inner core radius fraction ($r_{\rm IC}/r_{\rm OC}$) at the end of accretion for the whole range of explored parameters. Plots are shown for cores made of pure iron (left column), and for cores containing iron and $5\%$ of light elements (right column). The upper and lower row comprise cases with mantle iron numbers $\# Fe_{\rm M}$ of $0$ and $0.1$, respectively.
+
+\begin{figure}[t]
+\includegraphics[width=\textwidth]{fig/int_struc_alt.pdf}
+\caption{(Left) Schematic representation of a planetary interior showing the solid inner core, the liquid outer core, and a portion of the viscous lower mantle. As the inner core solidifies, it releases heat into the outer core in the form of latent and gravitational heat. In turn, the outer core releases heat into the mantle due to secular cooling. All these energy contributions drive convection in the outer core and power dynamo activity.
+(Right) Internal structures calculated for planets with different masses $M_{\rm p}$ (1 and 2 $M_{\rm Earth}$) and iron contents in their early evolution stage, right after the crystallisation of molten silicates at the CMB. From top to bottom, the mantle iron number $\# Fe_{\rm M}$ is $0$, $0.1$, and $0.2$. The bulk iron inventory $X_{\rm Fe}$ increases in clockwise direction ($15$, $35$, $55$, and $75$~wt.\% Fe in the upper left, upper right, lower right, and lower left quarters, respectively).}
+\label{fig:rIC_sketch}
+\end{figure}
+
+\begin{figure}[t]
+\includegraphics[width=\textwidth]{fig/R_IC.pdf}
+\caption{Radial fraction of the inner core ($r_{\rm IC}/r_{\rm OC}$) at the end of accretion as a function of planetary mass, bulk iron content, mantle iron number (upper row: $\# Fe_{\rm M}=0$, lower row: $\# Fe_{\rm M}=0.1$), and core composition (left column: pure iron, right column: iron and $5\%$ light elements).}
+\label{fig:rIC}
+\end{figure}
+
+We find that planets with cores made of pure iron and low mantle iron numbers (e.g., upper left panel in Figure~\ref{fig:rIC}) do not feature solid inner cores if the bulk iron content is smaller than $X_{\rm Fe}\sim 35$~wt.\%, regardless of the planetary mass. Above this threshold, early inner cores are present and can reach up to $>80\%$ of the core radius. The addition of $5\%$ of light elements (Figure~\ref{fig:rIC}; right column) depresses the core melting temperature and pushes the presence of a solid inner core to higher bulk iron contents. A different distribution of iron between core and mantle influences the inner core size as well. As expected, planets with more iron in the mantle (i.e., a higher mantle iron number) have smaller core sizes, but solid inner cores tend to occupy a larger volume (see Figures~\ref{fig:rIC_sketch} and \ref{fig:rIC}). This is a result of the reduction of the mantle liquidus, which in turn leads to lower temperatures at the CMB and at the planetary centre (see Figure~\ref{fig:temp_profiles}). An additional effect of higher mantle iron contents is the drastic increase of the mantle viscosity, which in turn reduces the efficiency of convection. As a result, heat is transported less efficiently from the core to the mantle, and a lower CMB heat flow is expected.
+Importantly, we note that the inner core fractions and radii (latter not shown) do not seem to be strongly dependent on the planetary mass. Instead, the iron inventory, the distribution of iron between core and mantle, and the light element content are the main controlling parameters.
+
+\subsection{Core evolution}\label{sec:res_evolution}
+
+Starting from planetary interior structures in the aftermath of accretion (see Sections~\ref{sec:int_struc} and \ref{sec:res_structure}), we investigate the evolution of the core using a parameterized thermal and magnetic evolution model (Section~\ref{sec:evolution_model}). Hereafter, we present some core evolution results for planets with masses of $1$ and $2$~$M_{\rm Earth}$ and bulk iron contents of $30$ and $60$~wt.\% (see Figure~\ref{fig:Evo_all}). The core is made of iron and $5$\% light elements, and the mantle iron number $\#Fe_{\rm M}$ is set to zero.
+General trends summarising the outcomes of more simulations are shown in Section~\ref{sec:general_trends}.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{fig/Evo_all.pdf}
+\caption{Evolution of the core during $5$~Gyr for planets of $1$ and $2$~$M_{\rm Earth}$ with a bulk iron content of $30$ and $60$~wt.\% and a mantle iron number $\#Fe_{\rm M}$ of $0$. The core is made of pure iron and $5$\% of light elements. The different panels show: \textbf{(A)} Inner core radius fraction. \textbf{(B)} CMB temperature. The stars mark the inner core crystallisation onset. \textbf{(C)} Light element fraction in the liquid outer core (OC). \textbf{(D)} CMB heat flow for a stagnant-lid mantle. \textbf{(E)} Energy released from secular cooling. \textbf{(F)} Energy released from latent heat and gravitational heat. \textbf{(G)} Thermal buoyancy flux. \textbf{(H)} Chemical buoyancy flux. \textbf{(I)}Magnetic moment. As a reference, Earth's present-day magnetic moment is $7.8 \cdot 10^{22}$~Am\textsuperscript{2}.}
+\label{fig:Evo_all}
+\end{figure}
+
+\paragraph*{Inner core growth}
+
+Figure~\ref{fig:Evo_all}A and B show the growth of the inner core during 5~Gyr, along with the temperature evolution at the CMB, for planets of $1$ and $2$~$M_{\rm Earth}$ with different iron contents ($30$~wt.\% and $60$~wt.\%) and $\#Fe_{\rm M}=0$, for a core containing iron and 5\% of light elements. In contrast to iron-rich bodies, planets with a reduced bulk iron content ($30$~wt.\% in Figure~\ref{fig:Evo_all}) display smaller core mass fractions (see also Figures~\ref{fig:rIC_sketch} and \ref{fig:rIC}) and tend to feature fully liquid cores in the aftermath of accretion. As soon as the temperature at the planetary centre reaches the melting temperature, an inner core starts growing as $r_{\rm IC}(t)\propto \sqrt{t}$ \cite{labrosse_thermal_2003,labrosse_thermal_2015}. In this scenario, the inner core growth curve is steeper in the early crystallisation stages due to the faster cooling of the planet, and flattens out later on. Planets with a higher bulk iron content, on the other hand, already start partially solid cores (e.g., $\sim 50\%$ of the core is solid for planets with $60$~wt.\% Fe in Figure~\ref{fig:Evo_all}). Despite the large difference in mass, $1$~$M_{\rm Earth}$ planets tend to feature larger inner cores at the end of evolution compared to $2$~$M_{\rm Earth}$ bodies. This is a result of the melting temperature slope flattening out at higher pressures, as shown in Figure~\ref{fig:temp_profiles}. For all cases shown in Figure~\ref{fig:Evo_all}A, the solid inner core does not reach the outer core radius at the end of evolution, but we will show later in Section~\ref{sec:general_trends} that a large number of the analysed bodies end up with fully solid cores after 5~Gyr. 
+
+The temperature at the CMB lies on the adiabatic profile. Before an inner core starts crystallising, the profile is anchored to the central temperature, which is then shifted to the temperature at the ICB (assumed to be equal to the crystallisation temperature at that pressure) once an inner core starts forming (marked by a star in Figure~\ref{fig:Evo_all}A and B). As a result, the CMB temperature is higher for planets that start with no solid inner cores. 
+
+\paragraph*{Light elements in the outer core}
+As the solid inner core crystallises, the volume of the liquid outer core shrinks and becomes gradually enriched with light impurities, as shown in Figure~\ref{fig:Evo_all}C. We assume that these impurities are preferentially partitioned into the liquid phase. In the scenarios explored in Figure~\ref{fig:Evo_all}, the core has a bulk amount of light elements of $5\%$. However, depending on the size of the solid inner core (if any), the initial light element content in the outer core will differ. Following the examples shown in Figure~\ref{fig:Evo_all}, a $1$~$M_{\rm Earth}$ planet containing $60$~wt.\% of iron will start with an inner core radius fraction of $\sim 55$\% (Figure~\ref{fig:Evo_all}A) and  $\sim 6.3$\% of light elements in the outer core (Figure~\ref{fig:Evo_all}C). Instead, a body of same mass but containing $30$~wt.\% of iron will feature $5$\% of impurities in its fully liquid core. Due to the smaller inner core mass fraction of iron-poor bodies, the light element content in the liquid outer core will only increase by about $\sim 0.5$\% during evolution. On the other hand, bodies containing $60$~wt.\% of iron can grow large inner cores reaching up to $\sim 80\%$ of the core radius, featuring thin liquid cores containing more than $10\%$ of light components. The light element content in the liquid portion of the core has strong implications on the chemical composition of the latter with respect to the eutectic, as well as on the presence of different core formation mechanisms, as will be pointed out on the Discussion (Section~\ref{sec:core_compo}).
+
+\paragraph*{Energy budget}
+
+Figure~\ref{fig:Evo_all}D shows the evolution with time of the contributions to the energy budget for CMB heat flow histories for stagnant lid planets, calculated using the code CHIC (see Section \ref{sec:evolution_mantle} and \citeA{NOACK201740}). In the absence of an inner core, the CMB heat flow needs to be higher than the adiabatic one for thermal dynamo action to be viable. Once an inner core starts forming, a chemical dynamo can still take place even if the CMB heat flow lies below the adiabatic one. In the absence of heat supplied by radioactive decay, before an inner core starts forming, the only energy contribution to the CMB heat flow is provided by the secular cooling term as shown in Figure~\ref{fig:Evo_all}E (see also Section~\ref{sec:evolution_model}). Once an inner core starts crystallising, latent heat and gravitational energy (Figure~\ref{fig:Evo_all}F) start contributing as well, albeit being around one order of magnitude smaller than secular cooling.  
+
+More massive planets display higher CMB heat flows, resulting in higher secular cooling, latent, and gravitational heat terms. Despite having similar shapes, the CMB heat flow curves are all characterised by sharp oscillations during the first $\sim 1$~Gyr of evolution. Such oscillations are the result of the initially very hot interior, triggering large-scale convective overturns not unsimilar to those seen in magma ocean crystallisation studies \cite{ballmer2017reconciling,maurice2017onset}. At later evolution stages CMB heat flows then partially converge to becoming smoother, although oscillations are still possible due to small-scale convection. 
+
+\paragraph*{Buoyancy fluxes}
+
+The evolution of the buoyancy fluxes is shown in panels G and H in Figure~\ref{fig:Evo_all}, for fluxes arising as a result of thermal and chemical anomalies. As a planet cools, thermally-generated buoyancy decays. The spikes in the thermal buoyancy flux curve reproduce the ones observed in the CMB heat flow evolution plot, as thermal buoyancy is proportional to the amount of heat extracted from the mantle. 
+
+Chemical buoyancy is driven by the release of light elements into the outer core after the onset of crystallisation of a solid inner core. The extent of chemical buoyancy is largely determined by the density jump at the ICB $\Delta \rho_{\rm ICB}$, which in turn depends on the amount of light elements present in the liquid outer core. As the outer core gradually becomes enriched in light components due to inner core crystallisation, the density jump at the ICB increases accordingly. Nevertheless, chemical buoyancy decays in time as a result of the smaller inner core growth rate ($dr_{\rm IC}/dt$, see Equation~(\ref{eq:chem_buoyancy})) and drops to zero once the eutectic composition is reached.
+
+\paragraph*{Magnetic field}
+
+The dipolar magnetic moment is calculated using the scaling law by \citeA{olson2006dipole} (Equation~(\ref{eq:magn_moment})). Its evolution is shown in Figure~\ref{fig:Evo_all}I for planets with different masses and iron contents. As outlined in Section~\ref{sec:methods_MF}, magnetic activity can take place if the magnetic Reynolds number is higher than a critical value of $40$ and if the core is not entirely solid. The magnetic field also shuts off if the CMB heat flow is smaller than the heat conducted along the isentrope in the absence of inner core growth, as the existence of chemical dynamos is possible once an inner core starts forming. We find that the field is strongest, and magnetic activity lasts longer (with lifetimes reaching up to or more than $\sim 5$~Gyr) for massive and iron-rich planets. This is a result of their larger core sizes, as well as of the stronger CMB heat flow and resulting buoyancy fluxes. On the other hand, planets that are more iron-poor (i.e., 30~wt.\% as shown in Figure~\ref{fig:Evo_all}) tend to have shorter-lived magnetic fields, with lifetimes of up to $\sim 3.8$~Gyr. After the magnetic field shuts off, there may be some sporadic field reactivation episodes (see Figure~\ref{fig:Evo_all}I for a planet of $1$~$M_{\rm Earth}$ and $30$~wt.\% of iron), resulting from the oscillatory behaviour of the CMB heat flow and the thermal and chemical buoyancy fluxes. While these episodes might be common in a planet's history, we do not take them into account when calculating the magnetic field lifetimes.  
+
+\subsection{Magnetic field lifetimes and strengths}\label{sec:general_trends}
+
+Hereafter, we present results exploring the full range of parameters introduced in this study. We focus on the evolution of the magnetic field, which is represented by its lifetime and maximum strength at the planetary surface. Results are shown as regime diagrams, with linear interpolations between the explored simulation cases.  
+
+\begin{figure}
+\includegraphics[width=\textwidth]{fig/MF_lifetime_FeM.pdf}
+\caption{Magnetic field lifetimes for planets with different masses and bulk iron contents. Each panel comprises bodies with a different mantle iron number ($\#Fe_{\rm M}=0-0.2$). The core is made of pure iron.}
+\label{fig:MF_lifetime}
+\end{figure}
+
+Figure~\ref{fig:MF_lifetime} shows the magnetic field lifetimes obtained for planets with different masses and iron contents (bulk and mantle) for cores made of pure iron. Magnetic field lifetimes are longest ($\sim 4.15$~Gyr) for planets with higher mass, due to their elevated heat flows at the CMB. However, more than the planetary mass, the planetary iron content and distribution impact the lifetime of the magnetic field significantly. In this regard, we find that for each planetary mass the magnetic field lifetimes tend to increase up to intermediate bulk iron contents ($\sim 55$~wt.\% Fe), beyond which they start decaying. As inner cores of iron-rich planets occupy a larger fraction ($>50\%$) of the core radius already at the beginning of evolution (i.e., in the aftermath of accretion), they require less time to reach the CMB and shut down any pre-existing magnetic activity. Similarly, an increase in the mantle iron inventory strongly shortens the time span during which magnetic activity takes place, with longest lifetime estimates being $\sim 2.7$~Gyr and $\sim 1.5$~Gyr for planets with mantle iron numbers $\#Fe_{\rm M}$ of $0.1$ and $0.2$, respectively. This is again a result of the large inner core sizes arising from the depression of the mantle melting temperature, as depicted in Figure~\ref{fig:temp_profiles}. Rocky planets that are both very rich in iron and/or have large mantle iron fractions are thus likely to have completely solid inner cores (see Figure S1 in the Supplementary Information), and no magnetic activity after $5$~Gyr.
+
+This scenario changes if the core is not made uniquely of iron, but contains a fraction of light elements. The lower melting temperatures cause inner cores to be smaller in size and delay the onset of inner core crystallisation. As a result, the longest magnetic field lifetimes ($> 5$~Gyr) are shifted towards higher iron inventories (Figure~\ref{fig:MF_lifetime_LE}). Nevertheless, for bodies with large amounts of light elements (e.g., $10$\%) inner core crystallisation could be delayed to an extent at which thermal buoyancy alone is not able to sustain any magnetic activity anymore, leading to the extinction of the field.
+
+\begin{figure}
+\includegraphics[width=0.7\textwidth]{fig/MF_lifetime_S.pdf}
+\caption{Magnetic field lifetimes for planets with different masses and bulk iron contents. The core is made of iron and $5$~\% (left panel) or $10$~\% (right panel) of light elements. The mantle iron number is $\# Fe_{\rm M}=0$. The white regions denote parameter combinations for which the magnetic field is still active at the end of the simulations (and thus equals to $5$~Gyr; see colorbar).}
+\label{fig:MF_lifetime_LE}
+\end{figure}
+
+Figure~\ref{fig:MF_surf} shows the temporal maximum dipole field intensity at the planetary surface, obtained for planets with different masses and iron contents (bulk and mantle) for a core made of pure iron. The field intensity at the planetary surface $B_{\rm surf}$ scales from the intensity at the CMB $B_{\rm CMB}$ as $B_{\rm surf}=B_{\rm CMB}(r_{\rm OC}/r_{\rm planet})^{3}$ (where $r_{\rm planet}$ is the planetary radius), and thus strongly decreases for large planets with small core mass fractions. In addition, this quantity is proportional to the heat flow at the CMB, which governs the magnitude of thermal buoyancy fluxes, and is therefore expected to be highest during the early stages of a planet's evolution, similar to what is shown in Figure~\ref{fig:Evo_all}I for the dipole moment. The surface intensity is also important to assess the potential detectability of the generated magnetic fields (Section~\ref{sec:detectability}). We obtain the highest surface field intensities ($\sim 280$~$\mu$T, about nine times stronger than the one at present-day Earth's surface) for massive planets with high bulk iron contents and low fractions of mantle iron. Therefore, despite displaying shorter-lived magnetic fields, as shown in Figure~\ref{fig:MF_lifetime}, planets that are very iron-rich ($>70$~wt.\% Fe) are expected to sustain a stronger magnetic field signatures during their early evolution. The addition of light components to the core increases chemical buoyancy fluxes, which in turn leads to an increase of the magnetic dipole moment and intensity at the surface up to $\sim700$~$\mu$T (see Figure~\ref{fig:MF_surf_LE}). 
+
+\begin{figure}
+\includegraphics[width=\textwidth]{fig/M_surf.pdf}
+\caption{Temporal maximum magnetic field intensity at the planetary surface (as a reference, Earth's present-day surface intensity field is $30$~$\mu$T). Each panel comprises bodies with a different mantle iron number. The core is made of pure iron.}
+\label{fig:MF_surf}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.7\textwidth]{fig/M_surfS.pdf}
+\caption{Temporal maximum magnetic field intensity at the planetary surface (as a reference, Earth's present-day surface intensity field is $30$~$\mu$T). The mantle iron number $Fe_{\rm M}$ is 0 and the core is made of iron and $5$\% of light elements.}
+\label{fig:MF_surf_LE}
+\end{figure}
+
+Figure~\ref{fig:massradius} summarises our results by showing the calculated planetary radii \cite{noacklasbleis_2020}, as well as the magnetic field lifetimes for planets with different masses and mantle iron numbers $\#Fe_{\rm M}$ for a core made of pure iron. Together with the planetary mass, the planetary radius is one of the observables for exoplanets, and is used here as a proxy for the bulk iron content, with larger radii indicating a lower iron inventory. Our results indicate that both a planet's iron content and the distribution of iron between the mantle and the core (and the planetary mass to a lesser extent) have strong implications for the lifetime of the magnetic field. This also confirms that mass and radius alone are not enough for constraining planetary internal structures, dynamics, and magnetic field features. Understanding the interaction of internally-generated magnetic fields with the atmosphere will open new avenues for constraining interior properties starting from atmospheric observations.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{fig/Obs.pdf}
+\caption{Magnetic field lifetimes obtained for planets with different masses, bulk iron contents, and mantle iron numbers $\#Fe_{\rm M}$. The core is made of pure iron. The planetary radii are calculated using the profiles in \citeA{noacklasbleis_2020}. Note that the different mantle iron numbers in the three panels lead to different planetary radii.}
+\label{fig:massradius}
+\end{figure}
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Implications of large inner cores}\label{sec:large_IC}
+
+%\marine{I think it is missing a short discussion on the fundamental reason we almost always have an inner core: the temperature and the melting temperature of iron. In Boujibar and Driscoll, they remove the part with the temperature in the core by using the temperature at the CMB as a variable. Here, we choose a temperature at the CMB, which is quite cold. We also use a melting temperature that is quite high.}
+
+During the course of evolution, a large portion of the analysed cores becomes completely or mostly solid. In the former case, the inner core has grown up to the size of the liquid outer core, while in the latter case the core consists of a large solid inner core and a thin convective shell. Besides having dramatic consequences for the existence of a magnetic field, this scenario can also have strong implications for dynamo morphology and for the pattern of convection in the remaining liquid. Figure~\ref{fig:t70} shows the time required for the solid inner core to reach $70\%$ of the outer core radius, for planets of $1$ and $2$~$M_{\rm Earth}$ with different bulk and mantle iron contents (the core is made of pure iron). Since bodies with high mantle iron numbers tend to start their evolution with larger inner cores, the time elapsed until the outer core radius is reached is substantially reduced. As an example, $1$~$M_{\rm Earth}$ planet having a bulk iron content of $15$~wt.\% and a mantle iron number $\#Fe_{\rm M}=0$ needs much more than $5$~Gyr for its core to become $70\%$ solid, whereas it takes only $\sim 2.7$~Gyr for the same planet with a mantle iron number of $0.2$. This is even more extreme for $2$~$M_{\rm Earth}$ planets, for which the time is reduced to less than $1$~Gyr for a high mantle iron number. The time required to reach a solid core fraction of $70\%$ can be increased by a larger light element content.
+
+Several studies have investigated dynamo morphology at different inner core fractions. \citeA{heimpel2005numerical} examined the power spectra for dynamos at different shell geometries. They showed for inner core fractions lying between $r_{\rm IC}/r_{\rm OC}=0.15-0.65$, the dipole energy increases up to $r_{\rm IC}/r_{\rm OC}=0.45$. Above this threshold, the dipole energy slowly decays and the octupole and quadrupole contributions gradually increase. 
+The importance of non-dipolar components has also been found by \citeA{takahashi2006dipolar}, who investigated convection in a thin shell with the inner core occupying $70\%$ of the core radius. Based on similar findings, \citeA{stanley2007using} suggested that a high octupole contribution might hint to the presence of a large inner core, whereas dipolar configurations might be a signature of small (Earth-like) solid inner cores. A change in the magnetic field morphology can have effects on the potential detectability of the field, with higher order configurations remaining more enclosed in the planetary interior and not manifesting at the surface.
+
+Large inner cores can also influence the dynamics in the remaining thin liquid shell. With the Rayleigh number $Ra$ being related to the shell thickness $D_{\rm shell}$ as $Ra\propto D_{\rm shell}^{3}$, the presence of a thin liquid outer core volume will likely lead to a smaller Rayleigh number, and hence to less vigorous convection. The resulting convective pattern, taking place in a region with a wide aspect ratio of horizontal and vertical scales of convection might be described by a different set of equations than the ones used here. A thin liquid layer can also affect flows powering the magnetic field. For cases with a small or absent inner core, magnetic activity is powered by large-scale columnar flows acting over the whole volume of the liquid outer core. In presence of a thin shell, these columnar flows might shift to smaller scales, which in turn might alter the strength and the long-term stability of the magnetic field. 
+
+While the dynamo configuration and outer core dynamics might be influenced by a large inner core to a certain extent, it is still unclear at which inner core radius this starts to happen, and thus needs further investigation. Nevertheless, we note that once inner cores become very large in our models, the equations employed here might not be adequate to describe the dynamics at that stage.
+
+\begin{figure}
+\includegraphics[width=0.4\textwidth]{fig/t70.pdf}
+\caption{Time required for the solid inner core to reach 70\% of the core radius as a function of bulk iron content $X_{\rm Fe}$, for planets with mass $1$ and $2$~$M_{\rm Earth}$ and different iron numbers $\#Fe_{\rm M}$. The core is made of pure iron. Points for planets with low iron contents (bulk and mantle) are not shown, since the inner core never reaches 70\% of the core radius.}
+\label{fig:t70}
+\end{figure}
+
+\subsection{Composition of the outer core}\label{sec:core_compo}
+
+As the inner core grows, the density and the composition of the outer core change due to the addition of light elements expelled from the solid inner core (here we assume that light components strongly partition into the liquid phase). The identity and abundance of light impurities in exoplanetary cores are unconstrained, mainly due to their high pressure conditions, which are challenging for mineral physics experiments and ab initio studies to reproduce. In our simulations we consider cores with bulk light element abundances of up to $10$~wt.\%. However, in the presence of large solid inner cores, light element fractions in the outer core can be substantially higher. Figure~\ref{fig:Light_elements} shows light element abundances in the outer core after $5$~Gyr of evolution for $5$\% and $10$\% bulk light element abundances, for planets of different mass and iron content. Planets with a smaller light element inventory (i.e., $5$\%; left panel of Figure~\ref{fig:Light_elements}) tend to grow larger (and earlier) solid inner cores than planets with more light elements in their cores. As a result, the outer core becomes more enriched in light components compared to bodies with a larger bulk amounts of light elements (e.g., $10$\%; right panel of Figure~\ref{fig:Light_elements}), with fractions reaching up to $X\sim90\%$. 
+
+\begin{figure}
+\includegraphics[width=0.7\textwidth]{fig/Light_elements.pdf}
+\caption{Fraction of light elements in the liquid outer core (OC) after $5$~Gyr of evolution, as a function of planetary mass and bulk iron content. The left and right panel show fractions resulting from cores starting with bulk light element (LE) contents of $5$\% and $10$\%. We assume that light components are strongly partitioned into the liquid phase. The iron number $\# Fe_{\rm M}$ is $0$ for all cases.}
+\label{fig:Light_elements}
+\end{figure}
+
+At such high light element contents, the outer core composition might lie at or beyond the eutectic point, on the iron-poor side of the phase diagram. This could imply the occurrence of different processes responsible for core crystallisation. For example, if the eutectic point is reached, two different phases start freezing, namely hpc-Fe and a light alloy FeX, where X is a light element \cite{braginsky1963structure}. Such a mechanism will modify the energy balance in a way that is beyond the scope of the present study. In an attempt to simulate the attainment of the eutectic point, we topped the melting temperature depression to a maximum value of $\Delta T_{\rm melt,core}=1500$~K, as proposed by \citeA{morard2011melting}, beyond which outer core composition is kept to a pressure-dependent "eutectic" value and $\Delta \rho_{\rm ICB}=0$. However, while our approach somewhat simulates the core reaching a eutectic, it is important to note that eutectic compositions for different alloys at conditions similar to the ones of super-Earths need further investigation.
+
+\subsection{Influence of the CMB heat flow history and of the initial thermal profiles}
+
+The CMB heat flow histories employed in this work are calculated using the code CHIC \cite{NOACK201740} for planets in a stagnant lid tectonic configuration. We acknowledge that the use of CMB heat flow histories for stagnant lid planets does not reproduce the thermal and magnetic history of Earth's core. Nevertheless, our core evolution model is based on the one by \citeA{labrosse_thermal_2015} and using a similar CMB heat flow history  to the one employed there would lead to an evolution similar to Earth. The presence of a single stagnant ductile lithospheric plate acts as a cap and reduces the amount of heat that is released at the planetary surface. As a result, the heat flow at the CMB will be lower than for bodies featuring mobile lid-like mechanisms, which are expected to cool down at a faster rate. A similar effect might be exerted by the presence of an overlying thick atmospheres or a gaseous envelope \cite{lopez2014understanding,weiss2014mass}, both of which can maintain the planetary interior hot. The role exerted by planetary atmospheres on the evolution of planetary cores and magnetic fields needs to be addressed by future work. 
+
+A further underestimation of the CMB heat flow is related to the fact that the input of latent and gravitational heat released from the growth of an inner core are not taken into account in the mantle evolution model employed to obtain the CMB heat flow histories (see also Section~\ref{sec:evolution_mantle}). The coupling between mantle and core evolution is thus needed. However, for this study we employ a hot initial thermal profile, which is an upper limit of the profile in \citeA{stixrude2014melting}. In this scenario, the CMB temperature is anchored to the mantle liquidus, which leads to an initially hot core. This may, in turn, promote higher CMB heat flows compared to the ones obtained in previous work \cite{valencia_internal_2006,Tack13}.
+
+In order to compare our results with other thermal profiles, we ran the evolution models for bodies with a warm initial temperature profile, which corresponds to the case described in \citeA{stixrude2014melting} and to the warm case in \citeA{noacklasbleis_2020}. In this scenario, the temperature at the CMB is anchored to the mantle solidus. Hot and warm initial thermal profiles can represent different stages in a planet's evolution, as well as a different thickness of the overlying atmosphere, if any \cite{hamano2013emergence}. In this regard, a hot initial profile would be indicative of a planet surrounded by a thick insulating atmosphere, which would delay mantle freezing and lead to a long-lived magma ocean. On the other hand, a warm initial profile would represent a planet short-lived magma ocean and a thinner atmosphere.
+
+Starting out from a warm internal profile implies lower heat flows at the CMB, as well as cores that are partially or entirely solid. We find that regardless of the iron content (bulk and mantle) all cores end up being completely solid after $5$~Gyr of evolution. As a result, the magnetic field lifetime is drastically reduced and reaches values slightly higher than $3$~Gyr for a mantle iron number $\#Fe_{\rm M}=0$ and low bulk iron contents ($<20$~wt.\%). The presence of light impurities can help maintaining the field for longer, although lifetimes are still shorter than what obtained for the hot temperature scenario. 
+
+\subsection{Influence of the thermal conductivity}\label{sec:therm_cond}
+The lifetime of a magnetic field is also highly dependent on the core thermal conductivity, which determines how fast heat is conducted to the mantle. A number of recent findings reporting higher thermal conductivities than previously thought \cite{pozzo2012thermal,gomi2013high} have dramatically challenged the current understanding of processes taking place in the cores of Earth and other planets. Other processes enabling a longer-lived dynamo action have since then been invoked \cite{o2016powering,hirose2017crystallization}.
+
+Thermal conductivities of super-Earths' cores are unknown and will likely be challenging to determine in the near future. As mentioned in the Methods section, we employ a thermal conductivity of $150$~W.m\textsuperscript{-1}.K\textsuperscript{-1}, which lies in the upper range of estimates for Earth.
+For comparison, we ran core evolution simulations using thermal conductivities of $60$ and $250$~W.m\textsuperscript{-1}.K\textsuperscript{-1}. For cores made of pure iron, we obtain upper estimates of the magnetic field lifetime amounting to $5$~Gyr for planets with  a thermal conductivitiy of $60$, and almost $2$~Gyr lower ($3.2$~Gyr) for bodies having thermal conductivities of $250$. Such upper estimates are obtained for mantle iron numbers of 0. The addition of light elements yields magnetic field lifetimes longer than $5$~Gyr for $60$ and of up to $4.43$~Gyr for $250$~W.m\textsuperscript{-1}.K\textsuperscript{-1}. 
+The thermal conductivity remains a strongly controlling parameter and varying its value can thus significantly impact our results. Constraining this parameter for planets in our solar system like Mars, the Moon, and Mercury will help understanding how strong the thermal conductivity changes with pressure. 
+
+\subsection{Detectability} \label{sec:detectability}
+Magnetic fields of planets in the solar system were first detected by measuring their radio electron cyclotron emission, which generates from the interaction between the stellar wind and the magnetised planet. These observations are carried out from the ground using radio telescopes such as the Low-Frequency Array (LOFAR) \cite{kassim2004low}. As a result, only signals with frequencies greater than $10$~MHz (i.e., the ionospheric cutoff) are able to penetrate Earth's atmosphere and be detected. This constitutes a bias on the type of magnetic fields that can be observed, which are mainly on the order of the ones produced by giant planets like Jupiter and Saturn. 
+
+In order to be detectable, the magnetic field of a (exo)planet must fulfil two conditions: It must produce cyclotron emission signals with frequencies higher than the ionospheric cutoff of $10$~MHz (and thus have a magnetic field surface intensity of $B_{\rm s}=384$~$\mu$T), and have a flux density higher than the sensitivity of the instrument the observation is carried out with. The sensitivity describes the minimum signal that a telescope is able to detect within a given time frame. In their study, \citeA{driscoll_optimal_2011} have discussed the potential observability of exoplanetary magnetic fields through radio emissions, and we redirect the reader to that paper for more information on the relevant equations. While we explore a wider range of parameters (core mass fractions, iron distributions, and light element content), and despite some differences in the modelling approach (e.g., the use of different melting temperatures, CMB heat flow histories, and the consideration of chemical buoyancy), we find that the magnetic surface intensities obtained here (see Figure~\ref{fig:MF_surf}) match quite well with the ones discussed in \citeA{driscoll_optimal_2011} for planets of up to $2$~$M_{\rm Earth}$ (see Figure \ref{fig:MF_surf}). Planets with pure iron cores do not produce strong enough fields to emit at frequencies higher than the ionospheric cutoff, bodies with cores containing light impurities can reach surface field intensities of up to $\sim 650$~$\mu$T. Such planets can attain electron cyclotron frequencies $f_{\rm c}$ of up to $\sim 18$~MHz, above the ionospheric cutoff. 
+ 
+Planets can be detected if their flux density is higher than the one required by the LOFAR telescope. The flux density is related to a planet's distance from the solar system, its cutoff frequency, and its radio emission. The latter quantity depends on a planet's magnetic moment and its semi-major axis. Planets located in systems further away from the Sun will need to have smaller orbital distances in order to be detected. We find that planets located $1$~pc away from the Sun are detectable only if they lie within $\sim 10^{-3}$~AU from their host star. This orbital distance is reduced to $\sim 2\cdot 10^{-5}$~AU for bodies located $100$~pc away from the solar system. At such small semi-major axes, rocky planets may not be in stable orbital configurations and are expected to spiral and collapse into the host star. It needs to be noted, however, that the radio emission of a planet also changes according to the stellar activity, which influences the intensity, density, and velocity of stellar winds. Sporadic energetic events such as coronal mass ejections can increase the flux density of the signal by $1-2$ orders of magnitude \cite{farrell1999possibility}, and planets located further away from the host star might become temporarily detectable. We conclude that even if exoplanetary cores contain light elements raising the magnetic field intensities, current specifications of radio telescopes such as LOFAR may be not sensitive enough to detect the emission generated by their magnetic fields. Nevertheless, the development of indirect observation techniques, such as UV and radio wave transits \cite{fossati2010metals,withers2017occultations}, can provide useful insights on planetary composition, interior structure and magnetic activity. 
+
+% \subsection{Implications for planets in the solar system}
+% \irene{What are the implications of our results for planets like Mars with iron numbers FeM=0.2? Magnetic field lifetimes are much shorter (<$2$ Gyr)}
+
+\section{Summary and Conclusions}\label{sec:conclusions}
+The presence of a magnetic field during a planet's history is thought to influence its evolution, as well as the development and long-term stability of habitable surface conditions. Magnetic fields of rocky bodies are generated in an electrically conductive liquid layer in their deep interior (the metallic molten outer core for Earth). The discovery of a large amount of exoplanets and the search for extraterrestrial life motivate the investigation of the evolution and diversity of exo-magnetic fields. This constitutes a challenging task, as interior properties of exoplanets are difficult to estimate from current data.
+
+This work presents structures and evolution trends of the cores of a diverse set of planets with different masses ($0.8-2$ $M_{\rm Earth}$), iron contents (indicated by the bulk iron fraction), as well as variable partitioning of iron between the mantle and core (indicated by the mantle iron number). We employ an interior structure model \cite{noacklasbleis_2020} to obtain core structures at the late stages of planet formation and the evolution of the heat flow at the CMB. Starting from these, we model the subsequent thermal and magnetic evolutions of the cores, and calculate how long magnetic activity can be sustained. Our main findings are:
+
+\begin{itemize}
+    \item {While the planetary mass is not the most controlling parameter, the iron inventory strongly affects a planet's core thermal and magnetic evolution.}
+    \item{The presence of a solid inner core is common among newly-formed planets with high bulk and/or high mantle iron contents displaying large solid inner cores, as a result of the higher core mass fraction and the lower mantle melting temperature. Cores containing small fractions of light elements start with smaller inner cores due to the depression of the core melting temperature exerted by the presence of light impurities.}
+    \item {During 5~Gyr of evolution, a large portion of the analysed cores become mostly or fully solid. 
+    Solid inner cores occupying more than $\sim 70$\% of the v  olume of the core might be compatible with a lower dipole energy and different convection patterns, compared to cases with a smaller inner solid sphere. This can affect the generation and surface manifestation (detectability) of a magnetic field.} 
+    \item {The generated magnetic fields can remain active for up to $\sim 4.2$~Gyr, where longer lifetimes are obtained for planets with intermediate/high iron fractions ($60-75$~wt.\%) and low mantle iron numbers. Lifetimes can be extended to $5$~Gyr or longer in presence of a small fraction of core impurities. Planets that are more iron-rich tend to grow inner cores that quickly reach the CMB, shutting off any pre-existing magnetic activity, thus leading to shorter magnetic field lifetimes.}
+    \item{The expulsion of light components to the liquid outer core as the solid inner core grows enriches the former with impurities, whose fraction can reach up to $\sim 90\%$ after $5$~Gyr of evolution. Large light element contents may be compatible with the attainment of the eutectic (or cotectic). This may lead to different core crystallisation mechanisms, powering the magnetic field in a different way, not explored in this study.}
+    \item {The calculated magnetic field surface intensities can reach up to $\sim 700$~$\mu$T, i.e. $\sim23$~times the one of present-day Earth. Even though their signal lies above the ionospheric cutoff frequency of $10$~MHz, their emitted flux is too weak to be detected by current ground-based radio telescopes. The use of different, indirect, observation strategies (spectroscopic transit observations, observations of planetary dust tails) could provide further insights and constraints on exoplanetary magnetism.}
+\end{itemize}
+
+Investigating the diversity of exoplanetary magnetic fields will improve our understanding of the evolution of planets in our solar system and beyond. Ultimately, it is important to constrain the influence and feedback of internally generated magnetic fields on the planetary atmospheric evolution and habitability by fully coupling interior processes to ones at the outer edge of the atmosphere and the stellar environment. This will enable to constrain interior properties from future observed atmospheric parameters. This study provides a first step in this direction, by presenting some of the trends obtained from the evolution of exoplanetary cores.
+
+
+%% Enter Figures and Tables near as possible to where they are first mentioned:
+%
+%----------------
+% EXAMPLE FIGURES
+%
+% \begin{figure}
+% \includegraphics{example.png}
+% \caption{caption}
+% \end{figure}
+%
+% Giving latex a width will help it to scale the figure properly. A simple trick is to use \textwidth. Try this if large figures run off the side of the page.
+% \begin{figure}
+% \noindent\includegraphics[width=\textwidth]{anothersample.png}
+%\caption{caption}
+%\label{pngfiguresample}
+%\end{figure}
+%
+%
+% If you get an error about an unknown bounding box, try specifying the width and height of the figure with the natwidth and natheight options. This is common when trying to add a PDF figure without pdflatex.
+% \begin{figure}
+% \noindent\includegraphics[natwidth=800px,natheight=600px]{samplefigure.pdf}
+%\caption{caption}
+%\label{pdffiguresample}
+%\end{figure}
+%
+
+%
+% ---------------
+% EXAMPLE TABLE
+%
+% \begin{table}
+% \caption{Time of the Transition Between Phase 1 and Phase 2$^{a}$}
+% \centering
+% \begin{tabular}{l c}
+% \hline
+%  Run  & Time (min)  \\
+% \hline
+%   $l1$  & 260   \\
+%   $l2$  & 300   \\
+%   $l3$  & 340   \\
+%   $h1$  & 270   \\
+%   $h2$  & 250   \\
+%   $h3$  & 380   \\
+%   $r1$  & 370   \\
+%   $r2$  & 390   \\
+% \hline
+% \multicolumn{2}{l}{$^{a}$Footnote text here.}
+% \end{tabular}
+% \end{table}
+
+%% SIDEWAYS FIGURE and TABLE
+% AGU prefers the use of {sidewaystable} over {landscapetable} as it causes fewer problems.
+%
+% \begin{sidewaysfigure}
+% \includegraphics[width=20pc]{figsamp}
+% \caption{caption here}
+% \label{newfig}
+% \end{sidewaysfigure}
+%
+%  \begin{sidewaystable}
+%  \caption{Caption here}
+% \label{tab:signif_gap_clos}
+%  \begin{tabular}{ccc}
+% one&two&three\\
+% four&five&six
+%  \end{tabular}
+%  \end{sidewaystable}
+
+%% If using numbered lines, please surround equations with \begin{linenomath*}...\end{linenomath*}
+%\begin{linenomath*}
+%\begin{equation}
+%y|{f} \sim g(m, \sigma),
+%\end{equation}
+%\end{linenomath*}
+
+%%% End of body of article
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Optional Appendix goes here
+%
+% The \appendix command resets counters and redefines section heads
+%
+% After typing \appendix
+%
+%\section{Here Is Appendix Title}
+% will show
+% A: Here Is Appendix Title
+%
+
+%\section{Here is a sample appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Optional Glossary, Notation or Acronym section goes here:
+
+%
+%%%%%%%%%%%%%%
+% Acronyms
+%   \begin{acronyms}
+%   \acro{Acronym}
+%   Definition here
+%   \acro{EMOS}
+%   Ensemble model output statistics
+%   \acro{ECMWF}
+%   Centre for Medium-Range Weather Forecasts
+%   \end{acronyms}
+
+%
+%%%%%%%%%%%%%%
+% Notation
+%   \begin{notation}
+%   \notation{$a+b$} Notation Definition here
+%   \notation{$e=mc^2$}
+%   Equation in German-born physicist Albert Einstein's theory of special
+%  relativity that showed that the increased relativistic mass ($m$) of a
+%  body comes from the energy of motion of the body—that is, its kinetic
+%  energy ($E$)—divided by the speed of light squared ($c^2$).
+%   \end{notation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ACKNOWLEDGMENTS
+
+\acknowledgments
+This research has made use of the Exoplanet Orbit Database and the Exoplanet Data Explorer at exoplanets.org. IB acknowledges financial support from the Japanese Society for the Promotion of Science (JSPS). ML was funded by the  European Union's Horizon 2020 research and innovation program under the Marie Sk\l{}odowska-Curie Grant Agreement No. 795289. LN acknowledges financial support from the German Research Foundation (DFG) for project NO 1324/6-1. IB and ML thank Guillaume Morard, John Hernlund and Hagay Amit for helpful discussions. The authors appreciate the support of ELSI, Tokyo, to host the Planetary Diversity Workshop in 2016, which initiated this study. LN would like to thank the HPC Service of ZEDAT, Freie Universit\"at Berlin, for computing time. 
+The simulations were analysed using the open source software environment Matplotlib \cite{Hunter:2007}. Figures were generated using the perceptually uniform scientific colour maps lajolla, oslo, and bamako \cite{crameri2018scientific} to prevent visual distortion. All codes or simulation results needed to reproduce the figures in this paper are available on Gitlab. %\marine{to add:  reference to the availability of the code online -- exact address to be added at the time of the publication}\lena{Why not use the same as we used for the interior structure code, and then I can add the thermal evolution results there?}
+%\marine{that's 2 different things! I agree, the thermal evolution mantle should be online as well. I was referring to the python code to do the evolution for the core}
+
+%% ------------------------------------------------------------------------ %%
+%% References and Citations
+
+\bibliography{biblio}
+
+
+
+%Reference citation instructions and examples:
+%
+% Please use ONLY \cite and \citeA for reference citations.
+% \cite for parenthetical references
+% ...as shown in recent studies (Simpson et al., 2019)
+% \citeA for in-text citations
+% ...Simpson et al. (2019) have shown...
+%
+%
+%...as shown by \citeA{jskilby}.
+%...as shown by \citeA{lewin76}, \citeA{carson86}, \citeA{bartoldy02}, and \citeA{rinaldi03}.
+%...has been shown \cite{jskilbye}.
+%...has been shown \cite{lewin76,carson86,bartoldy02,rinaldi03}.
+%... \cite <i.e.>[]{lewin76,carson86,bartoldy02,rinaldi03}.
+%...has been shown by \cite <e.g.,>[and others]{lewin76}.
+%
+% apacite uses < > for prenotes and [ ] for postnotes
+% DO NOT use other cite commands (e.g., \citet, \citep, \citeyear, \nocite, \citealp, etc.).
+%
+\end{document}
+
+
+%% ------------------------------------------------------------------------ %%
+%
+%  SECTION HEADS
+%
+%% ------------------------------------------------------------------------ %%
+
+% Capitalize the first letter of each word (except for
+% prepositions, conjunctions, and articles that are
+% three or fewer letters).
+
+% AGU follows standard outline style; therefore, there cannot be a section 1 without
+% a section 2, or a section 2.3.1 without a section 2.3.2.
+% Please make sure your section numbers are balanced.
+% ---------------
+% Level 1 head
+%
+% Use the \section{} command to identify level 1 heads;
+% type the appropriate head wording between the curly
+% brackets, as shown below.
+%
+%An example:
+%\section{Level 1 Head: Introduction}
+%
+% ---------------
+% Level 2 head
+%
+% Use the \subsection{} command to identify level 2 heads.
+%An example:
+%\subsection{Level 2 Head}
+%
+% ---------------
+% Level 3 head
+%
+% Use the \subsubsection{} command to identify level 3 heads
+%An example:
+%\subsubsection{Level 3 Head}
+%
+%---------------
+% Level 4 head
+%
+% Use the \subsubsubsection{} command to identify level 3 heads
+% An example:
+%\subsubsubsection{Level 4 Head} An example.
+%
+%% ------------------------------------------------------------------------ %%
+%
+%  IN-TEXT LISTS
+%
+%% ------------------------------------------------------------------------ %%
+%
+% Do not use bulleted lists; enumerated lists are okay.
+% \begin{enumerate}
+% \item
+% \item
+% \item
+% \end{enumerate}
+%
+%% ------------------------------------------------------------------------ %%
+%
+%  EQUATIONS
+%
+%% ------------------------------------------------------------------------ %%
+
+% Single-line equations are centered.
+% Equation arrays will appear left-aligned.
+
+% Math coded inside display math mode \[ ...\]
+%  will not be numbered, e.g.,:
+%  \[ x^2=y^2 + z^2\]
+
+%  Math coded inside \begin{equation} and \end{equation} will
+%  be automatically numbered, e.g.,:
+%  \begin{equation}
+%  x^2=y^2 + z^2
+%  \end{equation}
+
+
+% % To create multiline equations, use the
+% % \begin{eqnarray} and \end{eqnarray} environment
+% % as demonstrated below.
+% \begin{eqnarray}
+%   x_{1} & = & (x - x_{0}) \cos \Theta \nonumber \\
+%         && + (y - y_{0}) \sin \Theta  \nonumber \\
+%   y_{1} & = & -(x - x_{0}) \sin \Theta \nonumber \\
+%         && + (y - y_{0}) \cos \Theta.
+% \end{eqnarray}
+
+%If you don't want an equation number, use the star form:
+%\begin{eqnarray*}...\end{eqnarray*}
+
+% Break each line at a sign of operation
+% (+, -, etc.) if possible, with the sign of operation
+% on the new line.
+
+% Indent second and subsequent lines to align with
+% the first character following the equal sign on the
+% first line.
+
+% Use an \hspace{} command to insert horizontal space
+% into your equation if necessary. Place an appropriate
+% unit of measure between the curly braces, e.g.
+% \hspace{1in}; you may have to experiment to achieve
+% the correct amount of space.
+
+
+%% ------------------------------------------------------------------------ %%
+%
+%  EQUATION NUMBERING: COUNTER
+%
+%% ------------------------------------------------------------------------ %%
+
+% You may change equation numbering by resetting
+% the equation counter or by explicitly numbering
+% an equation.
+
+% To explicitly number an equation, type \eqnum{}
+% (with the desired number between the brackets)
+% after the \begin{equation} or \begin{eqnarray}
+% command.  The \eqnum{} command will affect only
+% the equation it appears with; LaTeX will number
+% any equations appearing later in the manuscript
+% according to the equation counter.
+%
+
+% If you have a multiline equation that needs only
+% one equation number, use a \nonumber command in
+% front of the double backslashes (\\) as shown in
+% the multiline equation above.
+
+% If you are using line numbers, remember to surround
+% equations with \begin{linenomath*}...\end{linenomath*}
+
+%  To add line numbers to lines in equations:
+%  \begin{linenomath*}
+%  \begin{equation}
+%  \end{equation}
+%  \end{linenomath*}
