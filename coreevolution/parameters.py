@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import pandas as pd
-import glob
+import glob, os
 
 from scipy.optimize import curve_fit, minimize_scalar # for fitting the density with a function
 
@@ -15,7 +15,6 @@ def name_file(XFe, Mp, FeM):
     return "data_prof_M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.res".format(Mp, XFe, FeM)
 
 def read_data_profiles(filename, core=False):
-    print(filename)
     names = ["g(m/s^2)", "p(GPa)", "rho(kg/m^3)","r(m)", "T(K)", "oups", "Cp(J/kgK)", "alpha(10^-5 1/s)", "Gruneisen(1)","KT(GPa)", "KS(GPa)", "G(GPa)", "ElCond (Siemens)", "Material-Parameter" ]
     data = pd.read_csv(filename, skipinitialspace=True, sep=" ", names=names, index_col=False)
     if core == True:
@@ -137,15 +136,14 @@ def figure(data, ax, symb="-"):
     ax[1,1].set_xlabel("Radius (km)")
 
 
-def calculate_parameters(filename):
+def calculate_parameters(filename, verbose=False):
     data = read_data_profiles(filename)
     core = data[data["Material-Parameter"]==8.]
     # core = read_data_profiles(filename, core=True)
     # print(core)
     # extract the mass, XFe, FeM
-    newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in filename[:-4])
+    newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in os.path.basename(filename[:-4]))
     Mp, XFe, FeM = [float(i) for i in newstr.split()]
-    print (Mp,XFe,FeM)
     # initialize parameters with Earth
     param = Earth()
     #update parameters
@@ -171,11 +169,12 @@ def calculate_parameters(filename):
     param["K_c"] = 1403.e9 # Earth's bulk modulus at the center (Labrosse+2015)
     return param, core
 
-def write_parameter_file(filename, fig=False, folder=""):
+def write_parameter_file(filename, fig=False, folder="", verbose=False):
     """ Write the yaml file including all the parameters """
     param, core = calculate_parameters(filename)
-    newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in filename[:-4])
-    Mp, XFe, FeM = [float(i) for i in newstr.split()]
+    # newstr = ''.join((ch if ch in '0123456789.' else ' ') for ch in os.path.basename(filename[:-4]))
+    Mp, XFe, FeM = param["Mp"], param["XFe"], param["FeM"]
+    if verbose: print (Mp,XFe,FeM)
     #output_filename = filename[:-4]+".yaml"
     output_filename = folder+"M_ {:.1f}_Fe_{:.0f}.0000_FeM_{:2.0f}.0000.yaml".format(Mp, XFe, FeM)
     # create the yaml parameter file
@@ -198,9 +197,10 @@ def write_parameter_file(filename, fig=False, folder=""):
     return param #param["Mp"], param["XFe"], param["FeM"], param["rho_0"], param["L_rho"], param["A_rho"]
 
 
-def explore_all_create_yaml(folder, fig=False):
+def explore_all_create_yaml(folder, fig=False, verbose=False):
     files = [f for f in glob.glob(folder + "data_prof*.res")]
-    all_files = "all_files_list.txt"
+    all_files = folder+"/all_files_list.txt"
+    print("Creating {} data file".format(all_files))
     for file in files: 
         if file.split('/')[-1] != "data_IS.res":
             param = write_parameter_file(file, folder=folder)
