@@ -2,3 +2,5 @@
 *.res
 *.yaml
 *.zip
+*.pyc
+.DS_Store
