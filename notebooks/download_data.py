@@ -75,12 +75,16 @@ def data_qcmb(folder):
     for file in glob.glob("*.zip"):
         print(file)
         with ZipFile(file, 'r') as zip: 
-            # printing all the contents of the zip file 
-            # zip.printdir() 
-            # extracting all the files 
             print('{}: Extracting all the files now...'.format(file)) 
             zip.extractall("./") 
             print('Done!')
+
+
+if __name__ == "__main__": 
     
-    # liste des .zip
-    # extraction des .zip dans le dossier courant    
+    data_structures("../data/")# download an extract the structures
+    data_qcmb("../data/") # extract the qcmb data
+    
+    
+    
+    
