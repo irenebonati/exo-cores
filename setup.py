@@ -20,4 +20,11 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     package_data={}, # to be filled if needed : 'sample': ['package_data.dat'],
+    install_requires=[
+        'numpy',
+        'pandas',
+        "yaml", 
+        'scipy',
+        'matplotlib'
+        ],
 )
