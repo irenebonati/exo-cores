@@ -676,7 +676,7 @@ class Evolution():
         """Magnetic moment, unit:Am2 (Olson & Christensen 2006)"""
         u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r_IC))/eta_m
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0. or Rem<40.: 
+        if (F_th + F_X) < 0. or Rem<40.: 
             M = 0.
         else:
             M = 4 * np.pi * self.planet.r_OC**3 * beta * np.sqrt(self.planet.rho_0/mu_0)* ((F_th + F_X)*(self.planet.r_OC-r_IC))**(1./3.)
@@ -686,7 +686,7 @@ class Evolution():
         """Magnetic moment (Aubert et al.,2009)"""
         u = 1.3 * ((self.planet.r_OC-r)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r))/eta_m
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r) == 0. or Rem<40.: 
+        if (F_th + F_X) < 0. or Rem<40.: 
             M = 0.
         else:
             fi = F_X/(F_X+F_th)
