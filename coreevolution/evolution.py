@@ -220,24 +220,8 @@ class Evolution():
         self.t_70 = 0.
         
         # Magnetic field lifetime routine"""
-#         start=2
-#         for i in range(start,len(self.planet.time_vector)-1):
-#             if i==start and self.M[i] !=0 and self.M[i+1]!=0:
-#                 t_start = 0
-#             if i!=start and self.M[i] !=0 and self.M[i+1]!=0 and self.M[i-1]==0:
-#                 t_start=self.planet.time_vector[i]
-#             if self.M[i+1]==0 and self.M[i]!=0 and self.M[i-1]!=0:
-#                 t_end = self.planet.time_vector[i+1]
-#                 self.t_mf =(t_end-t_start)*1e-9
-#                 break
-#             if i==len(self.planet.time_vector)-2 and self.M[i]!=0 and self.M[i-1]!=0:
-#                 t_end = self.planet.time_vector[i+1]
-#                 self.t_mf =(t_end-t_start)*1e-9
-#                 break
-#         if self.M[start:-1].all()>0:
-#                 self.t_mf = 5.
-
         loc_zero=[]
+        mf = []
         for i in range(1,len(self.planet.time_vector)-1):
             if self.M[1:-1].all()>0:
                 self.t_mf = 5.
@@ -246,13 +230,17 @@ class Evolution():
                 loc_zero.append(0.)
             if self.M[i]==0.:
                 loc_zero.append(self.planet.time_vector[i])
+            if i==len(self.planet.time_vector)-2 and self.M[i]!=0.:
+                loc_zero.append(5e9)
+                
         if self.t_mf!=5:	
-            mf = []
-            for i in range(len(loc_zero)-1):
-                mf.append(loc_zero[i+1]-loc_zero[i])
-		
-            self.t_mf = np.max(mf)*1e-9
-        
+            if len(loc_zero)>1:
+                for i in range(len(loc_zero)-1):
+                    mf.append(loc_zero[i+1]-loc_zero[i])
+                self.t_mf = np.max(mf)*1e-9
+            else:
+                self.t_mf = loc_zero[0]*1e-9
+                                    
         print ("The magnetic field lifetime is %.7f billion years."%(self.t_mf))  
             
         for i in range(1,len(self.planet.time_vector)-1):
@@ -346,7 +334,7 @@ class Evolution():
             plt.figure(figsize=(5,4))
             ax=plt.gca()
             ax.plot(self.planet.time_vector[1:],self.M[1:],color='crimson')
-            ax.plot(self.planet.time_vector[1:],self.M_Aubert[1:],color='grey')
+            #ax.plot(self.planet.time_vector[1:],self.M_Aubert[1:],color='grey')
             ax.set_ylabel('Magnetic moment ($A m^{2}$)')
             ax2 = ax.twinx()  
             ax2.set_ylabel('Magnetic moment present Earth ($A m^{2}$)')  
