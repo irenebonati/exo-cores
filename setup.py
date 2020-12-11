@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="coreevolution",
-    version="0.1",
+    version="1.0",
     author="Marine Lasbleis, Irene Bonati",
     author_email="marine.lasbleis@gmail.com",
     description="Heat and energy budget for core evolution",
