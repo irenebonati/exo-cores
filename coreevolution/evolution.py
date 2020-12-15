@@ -553,12 +553,8 @@ class Evolution():
         def fun(x):
             P = P0 - K0 * ((x**2)/(L_rho**2) - (4.*x**4)/(5.*L_rho**4))
             # Here delta is set to 0!
-            fC1 = (r_OC/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (r_OC/L_rho)**2.- 3. / 14. * (0. + 1)* (2 * A_rho - 0.) * (r_OC/L_rho)**4.)
-            fC2 = (x/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (x/L_rho)**2.- 3. / 14. * (0. + 1.) * (2 * A_rho - 0.) * (x/L_rho)**4.)
-            #LE = (S * M_OC_0) /(4./3. * np.pi * rho_0 * L_rho**3 * (fC1-fC2))
-            
-            # This approximation gives the same results and extends the validity of this equation
-            LE = S * (1.+ (x**3.)/(L_rho**3.*fC1))
+            fC = (r_OC/L_rho)**3. * (1. - 3. / 5. * (0. + 1.) * (r_OC/L_rho)**2.- 3. / 14. * (0. + 1)* (2 * A_rho - 0.) * (r_OC/L_rho)**4.)
+            LE = S * (1.+ (x**3.)/(L_rho**3.*fC))
             
             function = 6500. * (P/340.)**(0.515) * 1./(1.-np.log(1.-LE))
             return function
@@ -620,7 +616,7 @@ class Evolution():
 
     def _PX(self, r):
         """ Gravitational heat power (Eq. A14 Labrosse 2015)"""
-        return 8 * np.pi**2 * self.planet.chi0 * GC * self.planet.rho_0**2 * self.planet.beta * r**2. \
+        return 8 * np.pi**2 * self.planet.S * GC * self.planet.rho_0**2 * self.planet.beta * r**2. \
         * self.planet.L_rho**2. / self.fC(self.planet.r_OC / self.planet.L_rho, 0.) \
         * (self.fX(self.planet.r_OC / self.planet.L_rho, r) - self.fX(r / self.planet.L_rho, r))
 
