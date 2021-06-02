@@ -17,7 +17,7 @@ python setup.py install
 
 ## How to cite this work
 
-Scientific publication: Bonati et al. submitted to GRL
+Scientific publication: Bonati et al. (2021)
 
 Cite the package: 
 
