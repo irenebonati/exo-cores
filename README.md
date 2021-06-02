@@ -17,8 +17,8 @@ python setup.py install
 
 ## How to cite this work
 
-Scientific publication: Bonati et al. (2021)
+Scientific publication: Bonati, I., Lasbleis, M., & Noack, L. (2021). Structure and thermal evolution of exoplanetary cores. Journal of Geophysical Research: Planets, 126, e2020JE006724. https://doi.org/10.1029/2020JE006724
 
-Cite the package: 
+Cite the package: Bonati, I., & Lasbleis, M. (2021, April 27). Marinelasbleis/coreevolution: v1.0.1 (Version v1.0.1). Zenodo. http://doi.org/10.5281/zenodo.4723640
 
 
