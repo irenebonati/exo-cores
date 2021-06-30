@@ -78,12 +78,12 @@ class Evolution():
         self.planet.r_IC_0 = self.find_r_IC(self.planet.T0,self.planet.S)
         
         # Check if the IC radius and melting temperature I find correspond to the ones in the planet structure
-        if self.planet.S == 0:
-            #assert int(self.planet.TL0) == int(self.planet.TL0_0),int(self.planet.r_IC_0) == int(self.planet.r_IC_0)
-        elif self.planet.S == 0.05:
-            #assert int(self.planet.TL0) == int(self.planet.TL0_005),int(self.planet.r_IC_0) == int(self.planet.r_IC_005)
-        elif self.planet.S == 0.11:
-            #assert int(self.planet.TL0) == int(self.planet.TL0_011),int(self.planet.r_IC_0) == int(self.planet.r_IC_011)
+#         if self.planet.S == 0:
+#             assert int(self.planet.TL0) == int(self.planet.TL0_0),int(self.planet.r_IC_0) == int(self.planet.r_IC_0)
+#         elif self.planet.S == 0.05:
+#             assert int(self.planet.TL0) == int(self.planet.TL0_005),int(self.planet.r_IC_0) == int(self.planet.r_IC_005)
+#         elif self.planet.S == 0.11:
+#             assert int(self.planet.TL0) == int(self.planet.TL0_011),int(self.planet.r_IC_0) == int(self.planet.r_IC_011)
 
                         
         if self.planet.r_IC_0 == 0.0:
