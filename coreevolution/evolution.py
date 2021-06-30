@@ -79,11 +79,11 @@ class Evolution():
         
         # Check if the IC radius and melting temperature I find correspond to the ones in the planet structure
         if self.planet.S == 0:
-            assert int(self.planet.TL0) == int(self.planet.TL0_0),int(self.planet.r_IC_0) == int(self.planet.r_IC_0)
+            #assert int(self.planet.TL0) == int(self.planet.TL0_0),int(self.planet.r_IC_0) == int(self.planet.r_IC_0)
         elif self.planet.S == 0.05:
-            assert int(self.planet.TL0) == int(self.planet.TL0_005),int(self.planet.r_IC_0) == int(self.planet.r_IC_005)
+            #assert int(self.planet.TL0) == int(self.planet.TL0_005),int(self.planet.r_IC_0) == int(self.planet.r_IC_005)
         elif self.planet.S == 0.11:
-            assert int(self.planet.TL0) == int(self.planet.TL0_011),int(self.planet.r_IC_0) == int(self.planet.r_IC_011)
+            #assert int(self.planet.TL0) == int(self.planet.TL0_011),int(self.planet.r_IC_0) == int(self.planet.r_IC_011)
 
                         
         if self.planet.r_IC_0 == 0.0:
@@ -188,8 +188,8 @@ class Evolution():
                             QX = PX*drIC_dt
 
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i)
-                    assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
-                    assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
+                    #assert abs(Q_CMB-self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
+                    #assert abs(QC + QL + QX - Q_CMB)<1,(QC + QL + QX,Q_CMB)
             else: 
 
                     dt_rem = self.Delta_time[i+1]
@@ -213,7 +213,7 @@ class Evolution():
                         T, r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M,M_ratio,P_IC,S_t,M_Aubert =  self.update_ic(r_IC, dt,self.planet.qcmb[i],self.P_IC[i],self.S_t[i],ratio=ratio_0)
                         Q_CMB_0 += Q_CMB
                         T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert = self.update_value(T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert,i)
-                    assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
+                    #assert abs(Q_CMB-(sum_ratio)*self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi) < 1., (Q_CMB/1e13,(self.planet.qcmb[i]*self.planet.r_OC**2 * 4 * np.pi)/1e13)
 # ------------------------------------------------------------------------------------------------------------------- #
          
         self.t_mf = 0. 
@@ -367,7 +367,7 @@ class Evolution():
         
         # CMB heat flow"""
         Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
-        assert Q_CMB > 0,Q_CMB
+        #assert Q_CMB > 0,Q_CMB
 
         # Temperature change at center"""
         dT_dt = Q_CMB/PC 
@@ -404,28 +404,26 @@ class Evolution():
         #assert QC_ad<Q_CMB, (Q_CMB,QC_ad)
         
         # Thermal buoyancy"""
-        F_th = self._F_th(qcmb,qc_ad)
+        F_th = self._F_th(qcmb,qc_ad,r_IC)
         
         # Compositional buoyancy"""
         F_X = 0. 
                 
-        S_t = self.planet.S
-        
-        # rms dipole field @ CMB"""
-        Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
-        
-        # rms dipole field @ surface"""
-        Bs = self._Bs (Bc,self.planet.r_planet)
+        S_t = self.planet.S   
         
         # Magnetic moment (Am2)"""
         if Q_CMB<QC_ad:
         	M=0.
         	M_Aubert=0.
         	M_ratio=0.
+        	Bc = 0.
+        	Bs = 0.
         else:
         	M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
         	M_Aubert = self._M_Aubert(r_IC,F_th,F_X,Q_CMB,QC_ad)*1e6        
         	M_ratio = M/magn_moment_Earth
+        	Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
+        	Bs = self._Bs (Bc,self.planet.r_planet)
                 
         return T, dT_dt,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX, qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert
         
@@ -442,7 +440,7 @@ class Evolution():
         PX = self._PX(r_IC)
         
         # CMB heat flow"""
-        Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb 
+        Q_CMB = 4*np.pi*self.planet.r_OC**2*qcmb
                         
         if r_IC > self.planet.r_OC or r_IC == self.planet.r_OC:
             r_IC = self.planet.r_OC
@@ -489,26 +487,23 @@ class Evolution():
         QC_ad = qc_ad *4*np.pi*self.planet.r_OC**2
  
         # Thermal buoyancy"""
-        F_th = self._F_th(qcmb,qc_ad)
+        F_th = self._F_th(qcmb,qc_ad,r_IC)
         
         # Compositional buoyancy"""
-        F_X = self._F_X(r_IC,drIC_dt,S_t,r_IC,S_t_eut)
-                                
-        # rms dipole field @ CMB"""
-        Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
-        
-        # rms dipole field @ surface"""
-        Bs = self._Bs (Bc,self.planet.r_planet)
+        F_X = self._F_X(r_IC,drIC_dt,S_t,S_t_eut)
                 
         if r_IC > self.planet.r_OC or r_IC == self.planet.r_OC:
             M = 0.
             M_Aubert=0.
             M_ratio = 0.
+            Bc = 0.
+            Bs = 0.
         else:
             # Magnetic moment (Am2)"""
             M = self._magn_moment(F_th,F_X,r_IC,Q_CMB,QC_ad)
             M_Aubert = self._M_Aubert(r_IC,F_th,F_X,Q_CMB,QC_ad)*1e6
-             
+            Bc = self._Bc(rho_OC,F_th,F_X,r_IC)
+            Bs = self._Bs (Bc,self.planet.r_planet)
             M_ratio = M/magn_moment_Earth
                                                         
         return T,r_IC, drIC_dt, PC, PL, PX, Q_CMB, T_CMB, QC, QL, QX,qc_ad, F_th, F_X, Bc, Bs, M, M_ratio, P_IC,S_t,M_Aubert
@@ -561,7 +556,6 @@ class Evolution():
         
         h = 1e3
         der = (fun(x+h)-fun(x-h))/(2*h)
-        #print (x,der,fun(x+h),fun(x-h))
         return der
     
     def M_OC(self,r):
@@ -645,11 +639,13 @@ class Evolution():
         return r_IC.tolist()
     
     def _Bc(self,rho_OC,F_th,F_X,r_IC): 
-        if (F_th + F_X) < 0. or (self.planet.r_OC-r_IC) == 0.:
+        u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
+        Rem = (u*(self.planet.r_OC-r_IC))/eta_m
+        if (F_th + F_X) < 0. or Rem<40.:
             Bc = 0.
         else:
             """rms dipole field intensity at the CMB (Olson + Christensen 2006, unit:T)"""
-            Bc = beta * np.sqrt(rho_OC * mu_0) * ((F_th+F_X)*self.planet.r_OC)**(1./3.)
+            Bc = beta * np.sqrt(rho_OC * mu_0) * ((F_th+F_X)*(self.planet.r_OC-r_IC))**(1./3.)
         return Bc
     
     def _Bs (self,Bc,r_planet):
@@ -660,6 +656,7 @@ class Evolution():
         """Magnetic moment, unit:Am2 (Olson & Christensen 2006)"""
         u = 1.3 * ((self.planet.r_OC-r_IC)/7.29e-5)**(1./5.) *(F_th + F_X)**(2./5.)
         Rem = (u*(self.planet.r_OC-r_IC))/eta_m
+        X=((self.planet.XFe*1e-2)-self.planet.FeM*1e-2)/(1-self.planet.FeM*1e-2)
         if (F_th + F_X) < 0. or Rem<40.: 
             M = 0.
         else:
@@ -686,9 +683,9 @@ class Evolution():
     
     def _buoyancy_flux(self,F_th,F_X):
         """Buoyancy flux (from Driscoll and Bercovici, eq. 35)"""
-        return F_th + F_X
+        return F_th + F_X 
     
-    def _F_th(self,q_cmb,qc_ad):
+    def _F_th(self,q_cmb,qc_ad,r):
         """Thermal buoyancy"""
         return self.planet.alpha_c * self.planet.gc / self.planet.rho_0 / self.planet.CP * (q_cmb - qc_ad)
     
@@ -697,13 +694,13 @@ class Evolution():
         D = (np.sqrt(3*self.planet.CP/(2*np.pi*self.planet.alpha_c*self.planet.rho_0*GC)))
         return k_c * T_cmb * self.planet.r_OC / (D**2)
     
-    def _F_X(self,r,drIC_dt,S,r_IC,S_eut):
+    def _F_X(self,r,drIC_dt,S,S_eut):
         """Compositional buoyancy"""
         if S==0. or S==S_eut:
             self.planet.Deltarho_ICB = 0.
         else:
             self.planet.Deltarho_ICB = 600./0.11 * S
-        g = 4. * np.pi/3. * GC * self.planet.rho_0 * r_IC*(1.-3./5. * ((r_IC)**2)/((self.planet.L_rho)**2) - 3. * self.planet.A_rho/7. * ((r_IC)**4.)/((self.planet.L_rho)**4.))
+        g = 4. * np.pi/3. * GC * self.planet.rho_0 * r*(1.-3./5. * ((r)**2)/((self.planet.L_rho)**2) - 3. * self.planet.A_rho/7. * ((r)**4.)/((self.planet.L_rho)**4.))
         return g * self.planet.Deltarho_ICB /self.planet.rho_0 * (r/self.planet.r_OC)**2 * drIC_dt
 
 
